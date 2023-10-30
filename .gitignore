@@ -3,12 +3,16 @@ data/birth_death/*
 !data/birth_death/.gitkeep
 
 data/simulated_trees/*
+!data/simulated_trees/.gitkeep
 
 data/SMIDGenOutgrouped/*
+!data/SMIDGenOutgrouped/.gitkeep
 
 data/superfine/*
+!data/superfine/.gitkeep
 
 data/SuperTripletsBenchmark/*
+!data/SuperTripletsBenchmark/.gitkeep
 
 methods/bcd/data/*
 
