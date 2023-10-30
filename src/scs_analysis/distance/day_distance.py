@@ -6,7 +6,6 @@ From https://link.springer.com/content/pdf/10.1007/BF01908061.pdf
 
 from typing import List
 from cogent3.core.tree import TreeNode
-from cogent3 import make_tree
 
 
 class PSW:
@@ -216,61 +215,3 @@ def rename_trees(trees: List[TreeNode]):
         tree.reassign_names(mapping)
 
     return inverse
-
-
-if __name__ == "__main__":
-    tree_1 = make_tree("((a,b),((c,d),e),(f,(g,(h,i))),j,(k,l,m),n);")
-    tree_2 = make_tree("(((h,g,k,(a,b),l,f,m),i,j),(e,(c,d)),n);")
-
-    # tree_1 = make_tree("(((a,b),d),(c,f));")
-    # tree_2 = make_tree("((e,f),((a,b),d));")
-    inverse = rename_trees([tree_1, tree_2])
-    # count = 0
-    # rename = {}
-    # for name in tree.get_tip_names():
-    #     rename[name] = count
-    #     count += 1
-    # print(tree)
-    # tree.reassign_names(rename)
-
-    # print(tree)
-
-    print(tree_1)
-    T1 = make_psw(tree_1)
-    print(T1)
-    X1 = ClusterTable(T1)
-    print(X1)
-
-    # print()
-
-    print(tree_2)
-    T2 = make_psw(tree_2)
-    print(T2)
-    # X2 = ClusterTable(T2)
-    # print(X2)
-
-    print()
-    print(inverse)
-
-    print(com_clust([T1, T2]))
-
-    print()
-
-    print(con_tree_psws([T1, T2]))
-
-    print()
-
-    print(inverse)
-    # T.treset()
-    # for i in range(T.M + T.N):
-    #     v, w = T.nvertex()
-    #     print(v, w)
-    #     if "INTERNAL" in v:
-    #         print("THING", T.leftleaf())
-    #     # print(T.nvertex())
-
-    # X = ClusterTable(T)
-    # print(X)
-    # X.xreset()
-    # for i in range(len(X.X) + 5):
-    #     print(X.nclus())

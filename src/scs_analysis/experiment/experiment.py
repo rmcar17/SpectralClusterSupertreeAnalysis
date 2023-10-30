@@ -5,18 +5,7 @@ from typing import List
 from cogent3 import make_tree
 
 
-from scs_analysis.distance.distance import (
-    cluster_matching_distance,
-    grf_distance,
-    rf_distance,
-)
-
-
-# from distance import (
-#     cluster_matching_distance,
-#     grf_distance,
-#     rf_distance,
-# )
+from scs_analysis.distance.distance import cluster_matching_distance, rooted_rf_distance
 
 data_path = "data/superfine/"
 model_trees_end = ".model_tree"
@@ -78,10 +67,9 @@ def run_methods(
             if tree is None:
                 print(f"{method}: time={time_result:.2f}s failed: {source_tree_file}) ")
             else:
-                rf = rf_distance(model, tree)
-                grf = grf_distance(model, tree)
+                rf = rooted_rf_distance(model, tree)
                 mat = cluster_matching_distance(model, tree)
-                print(f"{method}: time={time_result:.2f}s RF={rf} MAT={mat} GRF={grf}")
+                print(f"{method}: time={time_result:.2f}s RF={rf} MAT={mat}")
 
     return results
 
@@ -133,6 +121,6 @@ def run_experiment_smidgen_og(
 
 if __name__ == "__main__":
     methods = [SCS, BCD, SUP, MCS]
-    taxa = 100
+    taxa = 500
     density = 20
     run_experiment_smidgen_og(taxa, density, methods, verbosity=2)
