@@ -28,7 +28,8 @@ from typing import Dict, Optional, Sequence, Set, Tuple
 
 from cogent3.core.tree import TreeNode
 
-from spectral_cluster_supertree import (
+from spectral_cluster_supertree.scs.scs import (
+    _component_to_names_set,
     _connect_trees,
     _contract_proper_cluster_graph,
     _generate_induced_trees_with_weights,
@@ -40,10 +41,15 @@ from spectral_cluster_supertree import (
 
 
 def min_cut_supertree(
-    trees: Sequence[TreeNode], weights: Optional[Sequence[float]] = None
+    trees: Sequence[TreeNode],
+    pcg_weighting: str = "one",
+    normalise_pcg_weights: bool = False,
+    depth_normalisation: bool = False,
+    contract_edges: bool = True,
+    weights: Optional[Sequence[float]] = None,
 ) -> TreeNode:
     """
-    Spectral Cluster Supertree (SCS).
+    Min-Cut Supertree (MCS).
 
     Constructs a supertree from a collection of input trees. The supertree
     method is inspired by Min-Cut Supertree (Semple & Steel, 2000), using
@@ -61,13 +67,17 @@ def min_cut_supertree(
     """
 
     assert len(trees) >= 1, "there must be at least one tree"
-    # print("CALLING ON", trees)
+
+    assert pcg_weighting in ["one", "branch", "depth"]
 
     # Input trees are of equal weight if none is specified
     if weights is None:
         weights = [1.0 for _ in range(len(trees))]
 
     assert len(trees) == len(weights), "trees and weights must be of same length"
+
+    if len(trees) == 1:  # If there is only one tree left, we can simply graft it on
+        return trees[0]
 
     # The vertices of the proper cluster graph
     # are the names of the tips of all trees
@@ -80,35 +90,35 @@ def min_cut_supertree(
 
     pcg_vertices = set((name,) for name in all_names)
 
-    # print("STARTING PCG")
-    # start = time.time()
-    pcg_edges, pcg_weights, max_weights = _proper_cluster_graph_edges(
-        pcg_vertices, trees, weights
+    (
+        pcg_edges,
+        pcg_weights,
+        taxa_ocurrences,
+        taxa_co_occurrences,
+    ) = _proper_cluster_graph_edges(
+        pcg_vertices,
+        trees,
+        weights,
+        pcg_weighting,
+        normalise_pcg_weights,
+        depth_normalisation,
     )
-    # print("TOOK", time.time() - start)
 
-    # print("STARTING COMP")
-    # start = time.time()
     components = _get_graph_components(pcg_vertices, pcg_edges)
-    # print("TOOK", time.time() - start)
 
     if len(components) == 1:
-        # TODO: If there the graph is connected, then need to perform spectral clustering
-        # to find "best" components
-
-        # Modifies the proper cluster graph inplace
-        # print("START CONTRACT")
-        # start = time.time()
-        _contract_proper_cluster_graph(
-            pcg_vertices, pcg_edges, pcg_weights, max_weights, trees, weights
-        )
-        # all_total[0] += time.time() - start
-        # print("TOOK", time.time() - start)
-
-        # print("START CLUSTER")
-        # start = time.time()
+        if contract_edges:
+            # Modifies the proper cluster graph inplace
+            _contract_proper_cluster_graph(
+                pcg_vertices,
+                pcg_edges,
+                pcg_weights,
+                taxa_ocurrences,
+                taxa_co_occurrences,
+                trees,
+                weights,
+            )
         components = min_cut_partition(pcg_vertices, pcg_weights)
-        # print("TOOK", time.time() - start)
 
     # The child trees corresponding to the components of the graph
     child_trees = []
@@ -120,10 +130,8 @@ def min_cut_supertree(
     # Slightly frustrating since spectral clustering will
     # always generate two components.
 
-    # print("GOT COMPONENTS", components)
-
     for component in components:
-        component = component_to_names_set(component)
+        component = _component_to_names_set(component)
         # Trivial case for if the size of the component is <=2
         # Simply add a tree expressing that
         if len(component) <= 2:
@@ -134,14 +142,21 @@ def min_cut_supertree(
         # and recursively call SCS
 
         # Note, inducing could possible remove trees.
-        # print("BEFORE INDUCING", trees, "ON", component)
         new_induced_trees, new_weights = _generate_induced_trees_with_weights(
             component, trees, weights
         )
-        # print("AFTER INDUCING", new_induced_trees)
 
         # Find the supertree for the induced trees
-        child_trees.append(min_cut_supertree(new_induced_trees, new_weights))
+        child_trees.append(
+            min_cut_supertree(
+                new_induced_trees,
+                pcg_weighting,
+                normalise_pcg_weights,
+                depth_normalisation,
+                contract_edges,
+                new_weights,
+            )
+        )
 
         # It is possible that some tip names are missed (particularly
         # if inducing would only leave length 1). TODO: think more about when this case
@@ -149,18 +164,11 @@ def min_cut_supertree(
         missing_tips = component.difference(_get_all_tip_names(new_induced_trees))
 
         # In this case, treat these tips as individual subtrees
-        child_trees.extend(map(_tip_names_to_tree, missing_tips))
+        child_trees.extend(map(lambda x: _tip_names_to_tree((x,)), missing_tips))
 
     # Connect the child trees by making adjacent to a new root.
     supertree = _connect_trees(child_trees)
     return supertree
-
-
-def component_to_names_set(component: Set[Tuple]) -> Set:
-    names_set = set()
-    for c in component:
-        names_set.update(c)
-    return names_set
 
 
 def min_cut_partition(vertices: Set, edge_weights: Dict):
@@ -174,10 +182,6 @@ def min_cut_partition(vertices: Set, edge_weights: Dict):
         weighted_edges.append((*edge, edge_weights[edge]))
     graph.add_weighted_edges_from(weighted_edges)
 
-    # print("GRAPH:", graph)
-    # print("NODES:", graph.nodes)
-    # print("EDGES:", graph.edges(data=True))
-
     cut_value, partition = nx.stoer_wagner(graph)
-    # print(cut_value, partition)
+
     return list(map(set, partition))

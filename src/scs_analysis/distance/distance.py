@@ -4,12 +4,11 @@ The Generalized Robinson-Foulds Distance for Phylogenetic Trees
 https://www.liebertpub.com/doi/10.1089/cmb.2021.0342
 """
 
-import time
 from typing import Any, Dict, FrozenSet, Set, Tuple
 from cogent3.core.tree import TreeNode
 from cogent3 import make_tree
 import networkx as nx
-from day_distance import (
+from .day_distance import (
     ClusterTable,
     com_clust,
     con_tree_cluster_table,

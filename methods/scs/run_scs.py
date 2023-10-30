@@ -22,7 +22,7 @@ if __name__ == "__main__":
         input_trees,
         pcg_weighting="branch",
         contract_edges=False,
-        normalise_pcg_weights=sys.argv[2] == "False",
-        depth_normalisation=sys.argv[2] == "True",
+        normalise_pcg_weights=False,
+        depth_normalisation=False,
     )
     print(supertree)
