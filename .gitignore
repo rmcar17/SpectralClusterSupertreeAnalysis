@@ -1,3 +1,17 @@
+# Data folders
+data/birth_death/*
+!data/birth_death/.gitkeep
+
+data/simulated_trees/*
+
+data/SMIDGenOutgrouped/*
+
+data/superfine/*
+
+data/SuperTripletsBenchmark/*
+
+methods/bcd/data/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
