@@ -44,16 +44,30 @@ class ResultsLogger:
 
         with open(file_path, "r") as f:
             for line in f:
-                stf, wall_time, tree = line.strip("\n").split("\t")
+                mtf, stf, wall_time, tree = line.strip("\n").split("\t")
                 if stf == source_tree_file:
                     return True
         return False
 
     def write_results(
-        self, method: str, source_tree_file: str, wall_time: float, tree: TreeNode
+        self,
+        method: str,
+        model_tree_file: Optional[str],
+        source_tree_file: str,
+        wall_time: float,
+        tree: TreeNode,
     ) -> None:
         with open(self.format_file_path(method), "a") as f:
-            f.write(source_tree_file + "\t" + str(wall_time) + "\t" + str(tree) + "\n")
+            f.write(
+                str(model_tree_file)
+                + "\t"
+                + source_tree_file
+                + "\t"
+                + str(wall_time)
+                + "\t"
+                + str(tree)
+                + "\n"
+            )
 
     def format_file_path(self, method: str) -> str:
         return self.write_directory + method + self.file_suffix
@@ -106,7 +120,9 @@ def run_methods(
         results[method] = (tree, end_time - start_time)
 
         if logger is not None:
-            logger.write_results(method, source_tree_file, end_time - start_time, tree)
+            logger.write_results(
+                method, model_tree_file, source_tree_file, end_time - start_time, tree
+            )
 
     with open(model_tree_file, "r") as f:
         model = make_tree(f.read().strip())
