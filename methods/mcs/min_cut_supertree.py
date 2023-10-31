@@ -32,6 +32,7 @@ from spectral_cluster_supertree.scs.scs import (
     _component_to_names_set,
     _connect_trees,
     _contract_proper_cluster_graph,
+    _denamify,
     _generate_induced_trees_with_weights,
     _get_all_tip_names,
     _get_graph_components,
@@ -77,6 +78,7 @@ def min_cut_supertree(
     assert len(trees) == len(weights), "trees and weights must be of same length"
 
     if len(trees) == 1:  # If there is only one tree left, we can simply graft it on
+        _denamify(trees[0])
         return trees[0]
 
     # The vertices of the proper cluster graph
