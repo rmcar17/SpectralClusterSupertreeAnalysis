@@ -2,6 +2,15 @@ from pathlib import Path
 
 import click
 from scs_analysis.distance.distance import *
+from scs_analysis.experiment.experiment import (
+    BCD,
+    SCS,
+    SUP,
+    MCS,
+    run_experiment_smidgen,
+    run_experiment_smidgen_og,
+    run_experiment_super_triplets,
+)
 
 from scitrack import CachingLogger
 
@@ -110,10 +119,80 @@ def demo_echo(message, test, verbose):
 
 
 @main.command(no_args_is_help=True)
-@click.argument("experiment", required=True, type=str)
+@click.option("-a", "--all", is_flag=True)
+@click.option("-b", "--bcd", is_flag=True)
+@click.option("-s", "--scs", is_flag=True)
+@click.option("-u", "--sup", is_flag=True)
+@click.option("-m", "--mcs", is_flag=True)
+@click.argument("dataset", nargs=1, required=True, type=str)
+@click.argument("dataset-params", nargs=2, required=True, type=(int, int))
 @_verbose
-def run_experiment(experiment, verbose):
-    print(experiment, verbose)
+def run_experiment(all, bcd, scs, sup, mcs, dataset, dataset_params, verbose):
+    methods = []
+    if all:
+        methods = [BCD, SCS, SUP, MCS]
+    else:
+        if bcd:
+            methods.append(BCD)
+        if scs:
+            methods.append(SCS)
+        if sup:
+            methods.append(SUP)
+        if mcs:
+            methods.append(MCS)
+
+    dataset = dataset.lower()
+    dataset_params = list(dataset_params)
+
+    if dataset == "supertriplets":
+        experiment = run_experiment_super_triplets
+        if dataset_params[0] == 0:
+            dataset_params[0] = [25, 50, 75]
+        else:
+            dataset_params[0] = [dataset_params[0]]
+        if dataset_params[1] == 0:
+            dataset_params[1] = [10, 20, 30, 40, 50]
+        else:
+            dataset_params[1] = [dataset_params[1]]
+    elif dataset == "smidgen":
+        experiment = run_experiment_smidgen
+        if dataset_params[0] == 0:
+            dataset_params[0] = [100, 500, 1000]
+        else:
+            dataset_params[0] = [dataset_params[0]]
+        if dataset_params[1] == 0:
+            dataset_params[1] = [20, 50, 75, 100]
+        else:
+            dataset_params[1] = [dataset_params[1]]
+    elif dataset == "smidgenog":
+        experiment = run_experiment_smidgen_og
+        if dataset_params[0] == 0:
+            dataset_params[0] = [100, 500, 1000]
+        else:
+            dataset_params[0] = [dataset_params[0]]
+        if dataset_params[1] == 0:
+            dataset_params[1] = [20, 50, 75, 100]
+        else:
+            dataset_params[1] = [dataset_params[1]]
+    elif dataset == "smidgenog10000":
+        experiment = run_experiment_smidgen_og
+        if len(dataset) < 2:
+            dataset.append([10000])
+        if len(dataset) < 3:
+            dataset.append([0])
+    else:
+        raise ValueError("Invalid Experiment")
+
+    for param_1 in dataset_params[0]:
+        for param_2 in dataset_params[1]:
+            experiment(
+                param_1,
+                param_2,
+                methods,
+                verbosity=verbose,
+                calculate_distances=False,
+                result_logging=True,
+            )
 
 
 if __name__ == "__main__":
