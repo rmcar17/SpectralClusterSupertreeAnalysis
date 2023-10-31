@@ -5,7 +5,7 @@ from typing import List
 from cogent3 import make_tree
 
 
-from scs_analysis.distance.distance import cluster_matching_distance, rooted_rf_distance
+from scs_analysis.distance.distance import matching_cluster_distance, rooted_rf_distance
 
 data_path = "data/superfine/"
 model_trees_end = ".model_tree"
@@ -30,7 +30,11 @@ DEFAULT_OPTIONS = []
 
 
 def run_methods(
-    source_tree_file: str, model_tree_file: str, methods: List[str], verbosity=1
+    source_tree_file: str,
+    model_tree_file: str,
+    methods: List[str],
+    verbosity=1,
+    force_bifurcating=True,
 ):
     results = {}
     for method in methods:
@@ -50,14 +54,18 @@ def run_methods(
         end_time = time.time()
 
         try:
-            tree = make_tree(result.stdout.decode("utf-8").strip()).bifurcating()
+            tree = make_tree(result.stdout.decode("utf-8").strip())
+            if force_bifurcating:
+                tree = tree.bifurcating()
         except:
             tree = None
 
         results[method] = (tree, end_time - start_time)
 
     with open(model_tree_file, "r") as f:
-        model = make_tree(f.read().strip()).bifurcating()
+        model = make_tree(f.read().strip())
+        if force_bifurcating:
+            model = model.bifurcating()
 
     for method in methods:
         tree, time_result = results[method]
@@ -68,7 +76,7 @@ def run_methods(
                 print(f"{method}: time={time_result:.2f}s failed: {source_tree_file}) ")
             else:
                 rf = rooted_rf_distance(model, tree)
-                mat = cluster_matching_distance(model, tree)
+                mat = matching_cluster_distance(model, tree)
                 print(f"{method}: time={time_result:.2f}s RF={rf} MAT={mat}")
 
     return results
@@ -121,6 +129,6 @@ def run_experiment_smidgen_og(
 
 if __name__ == "__main__":
     methods = [SCS, BCD, SUP, MCS]
-    taxa = 500
+    taxa = 100
     density = 20
     run_experiment_smidgen_og(taxa, density, methods, verbosity=2)
