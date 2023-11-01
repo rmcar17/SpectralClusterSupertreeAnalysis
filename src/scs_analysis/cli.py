@@ -11,6 +11,7 @@ from scs_analysis.experiment.experiment import (
     run_experiment_smidgen_og,
     run_experiment_super_triplets,
 )
+from scs_analysis.experiment.distance_calculator import calculate_all_distances
 
 from scitrack import CachingLogger
 
@@ -193,6 +194,12 @@ def run_experiment(all, bcd, scs, sup, mcs, dataset, dataset_params, verbose):
                 calculate_distances=False,
                 result_logging=True,
             )
+
+
+@main.command(no_args_is_help=True)
+@_verbose
+def calculate_distances(verbose):
+    calculate_all_distances(verbosity=verbose)
 
 
 if __name__ == "__main__":
