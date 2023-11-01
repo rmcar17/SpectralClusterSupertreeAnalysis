@@ -3,6 +3,11 @@
 results/*
 !results/.gitkeep
 
+# Images
+
+images/*
+!images/.gitkeep
+
 # Data folders
 data/birth_death/*
 !data/birth_death/.gitkeep
