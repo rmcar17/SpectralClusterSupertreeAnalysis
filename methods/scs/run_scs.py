@@ -18,9 +18,12 @@ def parse_trees(file_path: str) -> List[PhyloNode]:
 
 if __name__ == "__main__":
     input_trees = parse_trees(sys.argv[1])
+    pcg_weighting = "branch"
+    if sys.argv[1].startswith("data/SuperTripletsBenchmark/"):
+        pcg_weighting = "depth"
     supertree = spectral_cluster_supertree(
         input_trees,
-        pcg_weighting="branch",
+        pcg_weighting=pcg_weighting,
         contract_edges=False,
         normalise_pcg_weights=False,
         depth_normalisation=False,
