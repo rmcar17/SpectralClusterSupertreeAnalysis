@@ -109,3 +109,38 @@ def matching_cluster_distance(tree_1: TreeNode, tree_2: TreeNode) -> int:
         distance += graph.edges[edge]["weight"]
 
     return distance
+
+
+def rooted_f1_distance(tree_1: TreeNode, tree_2: TreeNode) -> float:
+    """
+    A variation of the F1 accuracy defined in https://watermark.silverchair.com/msx191.pdf?token=AQECAHi208BE49Ooan9kkhW_Ercy7Dm3ZL_9Cf3qfKAc485ysgAAA3UwggNxBgkqhkiG9w0BBwagggNiMIIDXgIBADCCA1cGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMQUCxmQl5ruQu2990AgEQgIIDKCAJoYQG5_dta6NgjGrJr4l3V1c8cTGkro6X9OUGkxsHS1opCg9NZ-Qx-NSHBr10AZUrnq1p2CnoKp4L1fXsBZXS4_rvv_-UW_xKXPJx2PepzfosFMnf2QIyFauc5MKCD9D8SwoMb6ZBTeX1KgXiHODHjE2L-8VYOzdmgYJALKdDc8xd6Y8xhb2n9gx-Lj_1AFvawAYe_uMktQfA4w5WSQXvOgXSO7g_21uqvTApHNLQk04m31bygsJrj0Po2pR4mFiEcWkyMMHhbkCiSx6bnVWyVddjTNQDKJ7-g-KfHWbQukdsWmDIcEi62_bhgJ3BYp8lLDmDB1lgb59LvH2Cmd2pnG_De-lY2diojqFcWcJ_Mxs_L2zpSUbd6YPaV3Loo4F15-3kPYyVxFMz842orzdvsblGTCuZmGmNQmGFjdtVYYxRd97Y509fw701gy8hHau5W5p2Wg8aCGum2GWVxoaA1uk55qAoNr-M6SEOslKb9-G0OUtLZkLLTTG8fiybf25txG0GWEKWx-ITY-f01SDoRKeiCTE4LIqoLTpDJLg_X_7WpkseWcoqwUzL3ihUjcRQ5Ht2SrRyqAfYtKqUGVi25Hkn5NZUN21mlaByThUVbi0AGy1u43JdYv9LkiT5XGWBJDzT6ZKSUf68VvRhwkdX3DA8iEwM_0rHwsIIkhBQ9_FPrCnHiVXYVVJSFs_NB-v-F956g1qJ1kiGVGQjmAlutvQr2QnHsml7rxnx8rA00xNxOuIxUT_xpccHAlaIZQF9EULCg48u7NvkF6mPuW95hcBJC074t_8a0AaF3zQKra96UYzGGain4A3GmRXWwuwDrZkcr7V81mw89bayk9Rlwl2HgefSsPafURgxNMX8p4itZFMG3pGQsy9M1IvFWzyMh_xIAqil2zZ6Y_jvAhbWP9nRUGdvsNIkNwbDhV2xTYYzZwPthNuFyREI5mgKOecMTv9GShN8OUqBhMO1NasOWrQ-7X1R7V7SKhzF6HMm5dBX_SRmQBTNCSvdzRntRari3Tws_EZB0pbAlMFs6Xo35saNuBe9pb0CmM0Uapk9mo2DT3a3VCY
+    taking into account information about the location of the root.
+
+    This is done my measuring f1 accuracy of clades
+
+    Args:
+        tree_1 (TreeNode): A tree
+        tree_2 (TreeNode): A tree
+
+    Returns:
+        float: The f1 score between the clusters of the two trees.
+    """
+    tree_1_clusters = set(map(frozenset, get_clusters(tree_1)))
+    tree_2_clusters = set(map(frozenset, get_clusters(tree_2)))
+
+    # Note that the distance definition is symmetric so
+    # which one is the model tree strictly doesn't matter
+
+    # WLOG, assume tree_1 is the model tree
+
+    # True positives are clusters that appear in both the model and estimated tree
+    tp = len(tree_1_clusters.intersection(tree_2_clusters))
+
+    # False positives are clusters that appear in the estimated but not the model
+    fp = len(tree_2_clusters.difference(tree_1_clusters))
+
+    # False negatives are clusters that appear in the model but not the estimated
+    fn = len(tree_1_clusters.difference(tree_2_clusters))
+
+    f1 = 2 * tp / (2 * tp + fp + fn)
+    return f1

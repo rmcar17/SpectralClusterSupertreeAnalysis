@@ -1,7 +1,11 @@
 import os
 from typing import List, Optional
 
-from ..distance.distance import matching_cluster_distance, rooted_rf_distance
+from ..distance.distance import (
+    matching_cluster_distance,
+    rooted_f1_distance,
+    rooted_rf_distance,
+)
 
 from .experiment import BCD, MCS, RESULTS_FOLDER, SCS, SUP
 from cogent3.core.tree import TreeNode
@@ -42,8 +46,10 @@ class DistanceLogger:
         wall_time: float,
         rf_distance: int,
         mc_distance: int,
+        f1_distance: float,
         brf_distance: int,
         bmc_distance: int,
+        bf1_distance: float,
         tree: TreeNode,
     ) -> None:
         parts = [
@@ -52,8 +58,10 @@ class DistanceLogger:
             str(wall_time),
             str(rf_distance),
             str(mc_distance),
+            str(f1_distance),
             str(brf_distance),
             str(bmc_distance),
+            str(bf1_distance),
             str(tree),
         ]
         with open(self.format_file_path(method), "a") as f:
@@ -109,19 +117,25 @@ def calculate_distances_for_experiment(
 
             rf = rooted_rf_distance(model_tree, tree)
             mc = matching_cluster_distance(model_tree, tree)
+            f1 = rooted_f1_distance(model_tree, tree)
 
             b_model_tree = model_tree.bifurcating()
             b_tree = tree.bifurcating()
 
             brf = rooted_rf_distance(b_model_tree, b_tree)
             bmc = matching_cluster_distance(b_model_tree, b_tree)
+            bf1 = rooted_f1_distance(b_model_tree, b_tree)
 
             if verbosity >= 1:
-                if brf != rf or bmc != mc:
-                    print(f"{method}: RF={rf} MC={mc} BRF={brf} BMC={bmc}")
+                if brf != rf or bmc != mc or bf1 != f1:
+                    print(
+                        f"{method}: RF={rf} MC={mc} F1={f1} BRF={brf} BMC={bmc} BF1={bf1}"
+                    )
                 else:
-                    print(f"{method}: RF={rf} MC={mc}")
-            logger.write_results(method, mtf, stf, wall_time, rf, mc, brf, bmc, tree)
+                    print(f"{method}: RF={rf} MC={mc} F1={f1}")
+            logger.write_results(
+                method, mtf, stf, wall_time, rf, mc, f1, brf, bmc, bf1, tree
+            )
 
         next_lines = [file_object.readline() for file_object in file_objects]
 
