@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import click
+from scs_analysis.data_generation.generate_model_trees import generate_model_trees
 from scs_analysis.distance.distance import *
 from scs_analysis.experiment.experiment import (
     BCD,
@@ -202,6 +203,52 @@ def calculate_distances(verbose):
 @main.command(no_args_is_help=False)
 def plot():
     graph_results("images/", "results/")
+
+
+@main.command(no_args_is_help=True)
+@click.option("-b", "--birth_rate", default=1.0, show_default=True)
+@click.option("-d", "--death_rate", default=0.2, show_default=True)
+@click.option("-t", "--target_height", default=1.0, show_default=True)
+@click.option("-i", "--initial_scaling_factor", default=1.0, show_default=True)
+@click.option(
+    "-n",
+    "--normal_dist_params",
+    default=(0.0, 0.05),
+    type=(float, float),
+    show_default=True,
+)
+@click.option(
+    "-s",
+    "--scaling_factor_bounds",
+    type=(float, float),
+    default=(0.05, 8.0),
+    show_default=True,
+)
+@click.argument("num_trees", type=int)
+@click.argument("taxa", type=int)
+@_verbose
+def create_bd_trees(
+    birth_rate,
+    death_rate,
+    target_height,
+    initial_scaling_factor,
+    normal_dist_params,
+    scaling_factor_bounds,
+    num_trees,
+    taxa,
+    verbose,
+):
+    generate_model_trees(
+        taxa,
+        num_trees,
+        birth_rate,
+        death_rate,
+        target_height,
+        initial_scaling_factor,
+        *normal_dist_params,
+        *scaling_factor_bounds,
+        verbosity=verbose,
+    )
 
 
 if __name__ == "__main__":
