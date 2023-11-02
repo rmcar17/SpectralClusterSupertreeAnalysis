@@ -18,3 +18,27 @@ def check_ultrametric(tree: PhyloNode) -> bool:
         if not math.isclose(all_tips[i].distance(tree), ultrametric_length):  # type: ignore
             return False
     return True
+
+
+def set_tree_height(tree: PhyloNode, target_height: float) -> None:
+    """
+    Given an ultrametric phylogenetic tree, scales the branch lengths
+    by a uniform constant so that the root-to-tip distances are at the
+    target height.
+
+    Args:
+        tree (PhyloNode): A phylogenetic tree to scale the branch lengths of.
+        target_height (float): The distance from the root to all tips
+    """
+    if not check_ultrametric(tree):
+        raise ValueError("Tree is not ultrametric.")
+
+    tip = next(tree.postorder(include_self=False))
+    assert tip.is_tip()
+
+    distance_to_root: float = tip.distance(tree)  # type: ignore
+
+    scale_factor = target_height / distance_to_root
+
+    for edge in tree.get_edge_vector(include_root=False):
+        edge.length *= scale_factor
