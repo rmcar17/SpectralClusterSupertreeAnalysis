@@ -6,8 +6,8 @@ import math
 def randomly_scale_tree_height(
     tree: PhyloNode,
     scaling_factor: float = 1.0,
-    mean: float = 0.0,
-    std: float = 0.05,
+    adder_mean: float = 0.0,
+    adder_std: float = 0.05,
     scaling_factor_lb: float = 0.05,
     scaling_factor_ub: float = 8.0,
 ) -> None:
@@ -15,7 +15,7 @@ def randomly_scale_tree_height(
         tree.length *= scaling_factor
     if not tree.is_tip():
         for child in tree:
-            scale_adder = np.random.normal(mean, std)
+            scale_adder = np.random.normal(adder_mean, adder_std)
 
             new_scaling_factor = scaling_factor + scale_adder
 
@@ -26,8 +26,8 @@ def randomly_scale_tree_height(
             randomly_scale_tree_height(
                 child,
                 new_scaling_factor,
-                mean,
-                std,
+                adder_mean,
+                adder_std,
                 scaling_factor_lb,
                 scaling_factor_ub,
             )
