@@ -1,5 +1,36 @@
 from cogent3.core.tree import PhyloNode
+import numpy as np
 import math
+
+
+def randomly_scale_tree_height(
+    tree: PhyloNode,
+    scaling_factor: float = 1.0,
+    mean: float = 0.0,
+    std: float = 0.05,
+    scaling_factor_lb: float = 0.05,
+    scaling_factor_ub: float = 8.0,
+) -> None:
+    if not tree.is_root():
+        tree.length *= scaling_factor
+    if not tree.is_tip():
+        for child in tree:
+            scale_adder = np.random.normal(mean, std)
+
+            new_scaling_factor = scaling_factor + scale_adder
+
+            # Clip the scaling factor between the lower and upper bounds
+            new_scaling_factor = max(new_scaling_factor, scaling_factor_lb)
+            new_scaling_factor = min(new_scaling_factor, scaling_factor_ub)
+
+            randomly_scale_tree_height(
+                child,
+                new_scaling_factor,
+                mean,
+                std,
+                scaling_factor_lb,
+                scaling_factor_ub,
+            )
 
 
 def is_ultrametric(tree: PhyloNode) -> bool:
@@ -65,7 +96,7 @@ def set_tree_height(tree: PhyloNode, target_height: float) -> None:
 if __name__ == "__main__":
     from scs_analysis.data_generation.birth_death import birth_death_tree
 
-    target_height = 0.214782135
+    target_height = 1.0
 
     tree = birth_death_tree(1, 0.2, stopping_taxa=10, restart_on_fail=True, rename=True)
 
@@ -85,4 +116,8 @@ if __name__ == "__main__":
 
     print("New height is", new_height)
 
-    print("All successfully changed", is_tree_correct_height(tree, target_height))
+    print("All successfully changed:", is_tree_correct_height(tree, target_height))
+
+    randomly_scale_tree_height(tree)
+
+    print("After random scaling:", tree)
