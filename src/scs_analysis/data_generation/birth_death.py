@@ -4,13 +4,12 @@ Source:
 https://lukejharmon.github.io/pcm/chapter10_birthdeath/#section-10.2-the-birth-death-model
 """
 
-from typing import List, Optional
-from cogent3.core.tree import PhyloNode
-from cogent3 import make_tree
-import os
 import random
 
-from tree_operations import num_rooted_nni_operations, rooted_nni, weight_nni_operations
+from typing import Optional
+
+from cogent3 import make_tree
+from cogent3.core.tree import PhyloNode
 
 
 def birth_death_tree(
