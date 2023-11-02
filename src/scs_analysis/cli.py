@@ -106,10 +106,6 @@ def demo_log(infile, outpath, achoice, names, overwrite, verbose, ensembl_accoun
     LOGGER.log_file_path = outpath / "some_path.log"
 
 
-def _parse_csv_arg(*args):
-    return args[-1].split(",")
-
-
 @main.command(no_args_is_help=True)
 @click.argument("message", required=True, type=str)
 @click.option("-t", "--test", is_flag=True, help="test run")
