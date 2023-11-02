@@ -11,6 +11,9 @@ images/*
 !images/.gitkeep
 
 # Data folders
+data/alignment/*
+!data/alignment/.gitkeep
+
 data/birth_death/*
 !data/birth_death/.gitkeep
 

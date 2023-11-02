@@ -2,6 +2,7 @@ from pathlib import Path
 
 import click
 from scs_analysis.data_generation.generate_model_trees import generate_model_trees
+from scs_analysis.data_generation.simulate_alignments import simulate_alignments
 from scs_analysis.distance.distance import *
 from scs_analysis.experiment.experiment import (
     BCD,
@@ -249,6 +250,13 @@ def create_bd_trees(
         *scaling_factor_bounds,
         verbosity=verbose,
     )
+
+
+@main.command(no_args_is_help=True)
+@click.option("-l", "--length", default=1000, show_default=True)
+@click.argument("taxa", type=int)
+def sim_bd_seqs(length, taxa):
+    simulate_alignments(taxa, length)
 
 
 if __name__ == "__main__":
