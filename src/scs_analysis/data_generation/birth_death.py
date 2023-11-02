@@ -96,7 +96,6 @@ def birth_death_tree(
             grandparent: PhyloNode = parent.parent
             if grandparent is None:
                 if restart_on_fail:
-                    # print("RESTARTING")
                     tree = make_tree("(t0:0.0,t1:0.0);")
                     tips = list(tree.traverse(self_before=False, self_after=False))
                     current_time = 0
