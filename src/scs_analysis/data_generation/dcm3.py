@@ -148,6 +148,37 @@ class ShortSubtreeGraph:
         for vertex in short_subtree:
             self.edges[vertex].update(short_subtree.difference((vertex,)))
 
+    def compute_components_with_separator(self, separator: Set) -> List[Set]:
+        vertices_backup = self.vertices.copy()
+        self.vertices.difference_update(separator)
+
+        edges_backup = {}
+        for vertex, connections in self.edges.items():
+            edges_backup[vertex] = connections.copy()
+
+        for vertex in separator:
+            del self.edges[vertex]
+
+        for edge in self.edges:
+            self.edges[edge].difference_update(separator)
+
+        components = []
+        while self.vertices:
+            vertex = self.vertices.pop()
+            new_component = set([vertex])
+
+            frontier = set(self.edges[vertex])
+            while frontier:
+                vertex = frontier.pop()
+                new_component.add(vertex)
+                self.vertices.remove(vertex)
+
+                frontier.update(self.edges[vertex].difference(new_component))
+            components.append(new_component)
+        self.vertices = vertices_backup
+        self.edges = edges_backup
+        return components
+
 
 def centroid_heuristic_separator(tree: PhyloNode) -> Set:
     """
@@ -196,7 +227,17 @@ def partition_short_subtree_graph(
     short_subtrees: List[Set],
     short_subtree_graph: ShortSubtreeGraph,
 ) -> List[Set]:
-    return []
+    centroid_separator = centroid_heuristic_separator(guide_tree)
+
+    ssg_components = short_subtree_graph.compute_components_with_separator(
+        centroid_separator
+    )
+    if len(ssg_components) <= 1:
+        pass  # TODO: centroid is not a separator, find optimal instead.
+
+    for component in ssg_components:
+        component.update(centroid_separator)  # Add the separator to all components
+    return ssg_components
 
 
 def split_tree(guide_tree: PhyloNode) -> List[PhyloNode]:
