@@ -1,4 +1,4 @@
-from typing import Iterable, List, Set
+from typing import Any, Dict, Iterable, List, Set
 from cogent3.core.tree import PhyloNode
 import heapq
 from dataclasses import dataclass, field
@@ -133,7 +133,7 @@ def compute_short_subtrees(tree: PhyloNode) -> List[Set]:
 class ShortSubtreeGraph:
     def __init__(self, short_subtrees: Iterable[Set]) -> None:
         self.vertices = set()
-        self.edges = {}
+        self.edges: Dict[Any, Set] = {}
 
         for short_subtree in short_subtrees:
             self.add_vertices(short_subtree)
@@ -148,7 +148,35 @@ class ShortSubtreeGraph:
         for vertex in short_subtree:
             self.edges[vertex].update(short_subtree.difference((vertex,)))
 
-    def compute_components_with_separator(self, separator: Set) -> List[Set]:
+    def get_maximal_cliques(self) -> List[List]:
+        all_cliques = []
+
+        chromatic_number = 1
+        vertex_list = list(self.vertices)
+        vertex_indices = {vertex_list[i]: i for i in range(len(vertex_list))}
+        s = {vertex: 0 for vertex in vertex_list}
+
+        for i in range(len(vertex_list)):
+            v = vertex_list[i]
+            potential_clique = [
+                x for x in self.edges[v] if vertex_indices[v] < vertex_indices[x]
+            ]
+
+            if len(self.edges[v]) == 0:
+                all_cliques.append([v])
+            if len(potential_clique) == 0:
+                continue
+
+            u = vertex_list[min([vertex_indices[x] for x in potential_clique])]
+            s[u] = max(s[u], len(potential_clique) - 1)
+
+            if s[v] < len(potential_clique):
+                all_cliques.append(potential_clique + [v])
+                chromatic_number = max(chromatic_number, 1 + len(potential_clique))
+
+        return all_cliques
+
+    def compute_components_with_separator(self, separator: Iterable) -> List[Set]:
         vertices_backup = self.vertices.copy()
         self.vertices.difference_update(separator)
 
@@ -222,9 +250,30 @@ def centroid_heuristic_separator(tree: PhyloNode) -> Set:
     return compute_short_subtree(most_balanced)
 
 
+def find_optimal_partition(short_subtree_graph: ShortSubtreeGraph) -> List[Set]:
+    best_partition = [short_subtree_graph.vertices.copy()]
+    best_partition_score = len(best_partition[0])
+
+    for potential_separator in short_subtree_graph.get_maximal_cliques():
+        components = short_subtree_graph.compute_components_with_separator(
+            potential_separator
+        )
+        if len(components) == 1:
+            continue
+
+        for component in components:
+            component.update(potential_separator)
+
+        partition_score = max(map(len, components))
+        if partition_score < best_partition_score:
+            best_partition = components
+            best_partition_score = partition_score
+
+    return best_partition
+
+
 def partition_short_subtree_graph(
     guide_tree: PhyloNode,
-    short_subtrees: List[Set],
     short_subtree_graph: ShortSubtreeGraph,
 ) -> List[Set]:
     centroid_separator = centroid_heuristic_separator(guide_tree)
@@ -233,7 +282,7 @@ def partition_short_subtree_graph(
         centroid_separator
     )
     if len(ssg_components) <= 1:
-        pass  # TODO: centroid is not a separator, find optimal instead.
+        return find_optimal_partition(short_subtree_graph)
 
     for component in ssg_components:
         component.update(centroid_separator)  # Add the separator to all components
@@ -244,9 +293,7 @@ def split_tree(guide_tree: PhyloNode) -> List[PhyloNode]:
     short_subtrees = compute_short_subtrees(guide_tree)
     short_subtree_graph = ShortSubtreeGraph(short_subtrees)
 
-    partition = partition_short_subtree_graph(
-        guide_tree, short_subtrees, short_subtree_graph
-    )
+    partition = partition_short_subtree_graph(guide_tree, short_subtree_graph)
 
     subtrees = []
     for taxa_group in partition:
