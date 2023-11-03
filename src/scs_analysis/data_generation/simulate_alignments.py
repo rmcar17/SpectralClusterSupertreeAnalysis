@@ -35,7 +35,7 @@ def sim_alignment(tree: PhyloNode, align_length: int) -> cogent3.ArrayAlignment:
     return lf.simulate_alignment(sequence_length=align_length, random_series=rng)
 
 
-def simulate_alignments(taxa: int, align_length: int = 1000):
+def simulate_alignments(taxa: int, align_length: int = 1000, verbosity=0):
     tree_path = BIRTH_DEATH_FOLDER + f"{taxa}/model_trees/"
     if not os.path.exists(tree_path):
         raise IOError(
@@ -45,11 +45,15 @@ def simulate_alignments(taxa: int, align_length: int = 1000):
     if not os.path.exists(seq_path):
         os.makedirs(seq_path)
 
-    tree_files = filter(
-        lambda x: x.startswith("bd.") and x.endswith(".model_tree"),
-        os.listdir(tree_path),
+    tree_files = list(
+        filter(
+            lambda x: x.startswith("bd.") and x.endswith(".model_tree"),
+            os.listdir(tree_path),
+        )
     )
-    for file_name in tree_files:
+    for i, file_name in enumerate(tree_files):
+        if verbosity >= 2:
+            print(f"Generating sequences {i+1} of {len(tree_files)}")
         model_tree = cogent3.load_tree(tree_path + file_name)
         alignment = sim_alignment(model_tree, align_length)
 

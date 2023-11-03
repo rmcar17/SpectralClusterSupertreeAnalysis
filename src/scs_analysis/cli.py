@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import click
+from scs_analysis.data_generation.dcm_partition import dcm_precise_source_trees
 from scs_analysis.data_generation.generate_model_trees import generate_model_trees
 from scs_analysis.data_generation.simulate_alignments import simulate_alignments
 from scs_analysis.distance.distance import *
@@ -255,8 +256,17 @@ def create_bd_trees(
 @main.command(no_args_is_help=True)
 @click.option("-l", "--length", default=1000, show_default=True)
 @click.argument("taxa", type=int)
-def sim_bd_seqs(length, taxa):
-    simulate_alignments(taxa, length)
+@_verbose
+def sim_bd_seqs(length, taxa, verbose):
+    simulate_alignments(taxa, length, verbosity=verbose)
+
+
+@main.command(no_args_is_help=True)
+@click.argument("taxa", type=int)
+@click.argument("max_subproblem_size", type=int)
+@_verbose
+def dcm_source_trees(taxa, max_subproblem_size, verbose):
+    dcm_precise_source_trees(taxa, max_subproblem_size, verbosity=verbose)
 
 
 if __name__ == "__main__":
