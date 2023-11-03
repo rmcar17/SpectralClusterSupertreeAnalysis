@@ -149,9 +149,53 @@ class ShortSubtreeGraph:
             self.edges[vertex].update(short_subtree.difference((vertex,)))
 
 
+def centroid_heuristic_separator(tree: PhyloNode) -> Set:
+    """
+    Find the edge which most separates the taxa, and return
+    the short subtree around that edge.
+
+    Args:
+        tree (PhyloNode): A tree.
+
+    Returns:
+        Set: The short subtree for the edge which most separates the taxa.
+    """
+    # Cache the number of descendants through a postorder traversal
+    for node in tree.postorder():
+        if node.is_tip():
+            setattr(node, "_tmp_num_descendants", 0)
+        else:
+            setattr(
+                node,
+                "_tmp_num_descendants",
+                sum([getattr(n, "_tmp_num_descendants") for n in node.children]),
+            )
+    # Possible to go faster by starting from the root, don't need to iterate through all nodes, just move in
+    # direction of most descendants. But this is the formula it is minimising anyway.
+    most_balanced = min(
+        tree.nontips(include_self=False),
+        key=lambda node: abs(
+            getattr(
+                node, "_tmp_num_descendants"
+            )  # The number of desecndants for a node
+            - (  # The number of other taxa in the tree
+                getattr(tree, "_tmp_num_descendants")
+                - getattr(node, "_tmp_num_descendants")
+            )
+        ),
+    )
+
+    for node in tree.postorder():
+        delattr(node, "_tmp_num_descendants")
+
+    return compute_short_subtree(most_balanced)
+
+
 def partition_short_subtree_graph(
-    guide_tree, short_subtrees, short_subtree_graph
-) -> List[Set[str]]:
+    guide_tree: PhyloNode,
+    short_subtrees: List[Set],
+    short_subtree_graph: ShortSubtreeGraph,
+) -> List[Set]:
     return []
 
 
