@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import Iterable, List, Set
 from cogent3.core.tree import PhyloNode
 import heapq
 from dataclasses import dataclass, field
@@ -130,8 +130,23 @@ def compute_short_subtrees(tree: PhyloNode) -> List[Set]:
     return short_subtrees
 
 
-def compute_short_subtree_graph(short_subtrees: List[Set]) -> None:
-    pass
+class ShortSubtreeGraph:
+    def __init__(self, short_subtrees: Iterable[Set]) -> None:
+        self.vertices = set()
+        self.edges = {}
+
+        for short_subtree in short_subtrees:
+            self.add_vertices(short_subtree)
+
+    def add_vertices(self, short_subtree: Set) -> None:
+        self.vertices.update(short_subtree)
+        for vertex in short_subtree:
+            if vertex not in self.edges:
+                self.edges[vertex] = set()
+
+    def add_edges(self, short_subtree: Set) -> None:
+        for vertex in short_subtree:
+            self.edges[vertex].update(short_subtree.difference((vertex,)))
 
 
 def partition_short_subtree_graph(
@@ -142,7 +157,7 @@ def partition_short_subtree_graph(
 
 def split_tree(guide_tree: PhyloNode) -> List[PhyloNode]:
     short_subtrees = compute_short_subtrees(guide_tree)
-    short_subtree_graph = compute_short_subtree_graph(short_subtrees)
+    short_subtree_graph = ShortSubtreeGraph(short_subtrees)
 
     partition = partition_short_subtree_graph(
         guide_tree, short_subtrees, short_subtree_graph
