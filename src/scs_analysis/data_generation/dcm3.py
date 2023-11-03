@@ -137,6 +137,7 @@ class ShortSubtreeGraph:
 
         for short_subtree in short_subtrees:
             self.add_vertices(short_subtree)
+            self.add_edges(short_subtree)
 
     def add_vertices(self, short_subtree: Set) -> None:
         self.vertices.update(short_subtree)
@@ -222,7 +223,7 @@ def centroid_heuristic_separator(tree: PhyloNode) -> Set:
     # Cache the number of descendants through a postorder traversal
     for node in tree.postorder():
         if node.is_tip():
-            setattr(node, "_tmp_num_descendants", 0)
+            setattr(node, "_tmp_num_descendants", 1)
         else:
             setattr(
                 node,
