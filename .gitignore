@@ -31,6 +31,10 @@ data/SuperTripletsBenchmark/*
 
 methods/bcd/data/*
 
+# tmp files
+
+tmp.nwk
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
