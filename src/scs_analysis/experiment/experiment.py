@@ -6,9 +6,17 @@ from cogent3 import make_tree
 from cogent3.core.tree import TreeNode
 from scs_analysis.distance.distance import matching_cluster_distance, rooted_rf_distance
 
-data_path = "data/superfine/"
-model_trees_end = ".model_tree"
-source_trees_end = ".source_trees"
+SUPER_TRIPLET_D = (25, 50, 75)
+SUPER_TRIPLET_K = (10, 20, 30, 40, 50)
+
+SMIDGEN_TAXA = (100, 500, 1000)
+SMIDGEN_DENSITY = (20, 50, 75, 100)
+
+SMIDGEN_OG_NORMAL_TAXA = (100, 500, 1000, 10000)
+SMIDGEN_OG_DENSITY = (20, 50, 75, 100)
+
+DCM_EXACT_TAXA = (1000,)
+DCM_EXACT_SUBTREE_SIZE = (100,)
 
 SUP = "SUP"
 SCS = "SCS"
@@ -138,7 +146,7 @@ def run_methods(
                 print("Computing distances for", method)
             if tree is None:
                 print(f"{method}: time={time_result:.2f}s failed: {source_tree_file}) ")
-            elif calculate_distances:
+            elif calculate_distances or verbosity >= 2:
                 rf = rooted_rf_distance(model, tree)
                 mc = matching_cluster_distance(model, tree)
                 print(f"{method}: time={time_result:.2f}s RF={rf} MC={mc}")
@@ -156,8 +164,8 @@ def run_experiment_super_triplets(
     calculate_distances: bool = True,
     result_logging: bool = False,
 ):
-    assert d in [25, 50, 75]
-    assert k in [10, 20, 30, 40, 50]
+    assert d in SUPER_TRIPLET_D
+    assert k in SUPER_TRIPLET_K
 
     if result_logging:
         logger = ResultsLogger(RESULTS_FOLDER, f"SuperTripletsBenchmark/d{d}/k{k}/")
@@ -189,8 +197,8 @@ def run_experiment_smidgen(
     calculate_distances: bool = True,
     result_logging: bool = False,
 ):
-    assert taxa in [100, 500, 1000]
-    assert density in [20, 50, 75, 100]
+    assert taxa in SMIDGEN_TAXA
+    assert density in SMIDGEN_DENSITY
 
     if result_logging:
         logger = ResultsLogger(RESULTS_FOLDER, f"superfine/{taxa}-taxa/{density}/")
@@ -220,11 +228,11 @@ def run_experiment_smidgen_og(
     calculate_distances: bool = True,
     result_logging: bool = False,
 ):
-    assert taxa in [100, 500, 1000, 10000]
+    assert taxa in SMIDGEN_OG_NORMAL_TAXA or taxa == 10000
     if taxa == 10000:
         assert density == 0
     else:
-        assert density in [20, 50, 75, 100]
+        assert density in SMIDGEN_OG_DENSITY
 
     if result_logging:
         logger = ResultsLogger(RESULTS_FOLDER, f"SMIDGenOutgrouped/{taxa}/{density}/")
@@ -246,6 +254,39 @@ def run_experiment_smidgen_og(
             calculate_distances=calculate_distances,
             logger=logger,
         )
+
+def run_experiment_dcm_exact(
+    taxa: int,
+    subtree_size: int,
+    methods: List,
+    verbosity: int = 1,
+    calculate_distances: bool = True,
+    result_logging: bool = False,
+):
+    assert taxa in DCM_EXACT_TAXA
+    assert subtree_size in DCM_EXACT_SUBTREE_SIZE
+
+    if result_logging:
+        logger = ResultsLogger(RESULTS_FOLDER, f"birth_death/{taxa}/dcm_source_trees/{subtree_size}/")
+    else:
+        logger = None
+
+    number_of_experiments = 10
+
+    for i in range(number_of_experiments):
+        source_file = f"data/birth_death/{taxa}/dcm_source_trees/{subtree_size}/bd.{i}.source_trees"
+        model_file = f"data/birth_death/{taxa}/model_trees/bd.{i}.model_tree"
+        if verbosity >= 1:
+            print(f"Results for {i} ({source_file}):")
+        run_methods(
+            source_file,
+            model_file,
+            methods,
+            verbosity=verbosity,
+            calculate_distances=calculate_distances,
+            logger=logger,
+        )
+
 
 
 if __name__ == "__main__":

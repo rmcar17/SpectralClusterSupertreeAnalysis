@@ -7,9 +7,18 @@ from scs_analysis.data_generation.simulate_alignments import simulate_alignments
 from scs_analysis.distance.distance import *
 from scs_analysis.experiment.experiment import (
     BCD,
+    DCM_EXACT_SUBTREE_SIZE,
+    DCM_EXACT_TAXA,
     SCS,
+    SMIDGEN_DENSITY,
+    SMIDGEN_OG_DENSITY,
+    SMIDGEN_OG_NORMAL_TAXA,
+    SMIDGEN_TAXA,
     SUP,
     MCS,
+    SUPER_TRIPLET_D,
+    SUPER_TRIPLET_K,
+    run_experiment_dcm_exact,
     run_experiment_smidgen,
     run_experiment_smidgen_og,
     run_experiment_super_triplets,
@@ -148,31 +157,31 @@ def run_experiment(all, bcd, scs, sup, mcs, dataset, dataset_params, verbose):
     if dataset == "supertriplets":
         experiment = run_experiment_super_triplets
         if dataset_params[0] == 0:
-            dataset_params[0] = [25, 50, 75]
+            dataset_params[0] = SUPER_TRIPLET_D
         else:
             dataset_params[0] = [dataset_params[0]]
         if dataset_params[1] == 0:
-            dataset_params[1] = [10, 20, 30, 40, 50]
+            dataset_params[1] = SUPER_TRIPLET_K
         else:
             dataset_params[1] = [dataset_params[1]]
     elif dataset == "smidgen":
         experiment = run_experiment_smidgen
         if dataset_params[0] == 0:
-            dataset_params[0] = [100, 500, 1000]
+            dataset_params[0] = SMIDGEN_TAXA
         else:
             dataset_params[0] = [dataset_params[0]]
         if dataset_params[1] == 0:
-            dataset_params[1] = [20, 50, 75, 100]
+            dataset_params[1] = SMIDGEN_DENSITY
         else:
             dataset_params[1] = [dataset_params[1]]
     elif dataset == "smidgenog":
         experiment = run_experiment_smidgen_og
         if dataset_params[0] == 0:
-            dataset_params[0] = [100, 500, 1000]
+            dataset_params[0] = SMIDGEN_OG_NORMAL_TAXA
         else:
             dataset_params[0] = [dataset_params[0]]
         if dataset_params[1] == 0:
-            dataset_params[1] = [20, 50, 75, 100]
+            dataset_params[1] = SMIDGEN_OG_DENSITY
         else:
             dataset_params[1] = [dataset_params[1]]
     elif dataset == "smidgenog10000":
@@ -181,6 +190,17 @@ def run_experiment(all, bcd, scs, sup, mcs, dataset, dataset_params, verbose):
             dataset.append([10000])
         if len(dataset) < 3:
             dataset.append([0])
+    elif dataset == "dcmexact":
+        experiment = run_experiment_dcm_exact
+        if dataset_params[0] == 0:
+            dataset_params[0] = DCM_EXACT_TAXA
+        else:
+            dataset_params[0] = [dataset_params[0]]
+        if dataset_params[1] == 0:
+            dataset_params[1] = DCM_EXACT_SUBTREE_SIZE
+        else:
+            dataset_params[1] = [dataset_params[1]]
+
     else:
         raise ValueError("Invalid Experiment")
 
