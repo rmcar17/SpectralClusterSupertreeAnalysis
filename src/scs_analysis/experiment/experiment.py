@@ -129,7 +129,7 @@ def run_methods(
 
         if logger is not None:
             logger.write_results(
-                method, model_tree_file, source_tree_file, end_time - start_time, tree
+                method, model_tree_file, source_tree_file, end_time - start_time, tree  # type: ignore
             )
 
     with open(model_tree_file, "r") as f:
@@ -255,6 +255,7 @@ def run_experiment_smidgen_og(
             logger=logger,
         )
 
+
 def run_experiment_dcm_exact(
     taxa: int,
     subtree_size: int,
@@ -267,7 +268,9 @@ def run_experiment_dcm_exact(
     assert subtree_size in DCM_EXACT_SUBTREE_SIZE
 
     if result_logging:
-        logger = ResultsLogger(RESULTS_FOLDER, f"birth_death/{taxa}/dcm_source_trees/{subtree_size}/")
+        logger = ResultsLogger(
+            RESULTS_FOLDER, f"birth_death/{taxa}/dcm_source_trees/{subtree_size}/"
+        )
     else:
         logger = None
 
@@ -286,7 +289,6 @@ def run_experiment_dcm_exact(
             calculate_distances=calculate_distances,
             logger=logger,
         )
-
 
 
 if __name__ == "__main__":

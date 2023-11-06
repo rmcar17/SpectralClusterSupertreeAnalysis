@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from ..distance.distance import (
     matching_cluster_distance,
@@ -43,7 +43,7 @@ class DistanceLogger:
         method: str,
         model_tree_file: Optional[str],
         source_tree_file: str,
-        wall_time: float,
+        wall_time: Union[float, str],
         rf_distance: int,
         mc_distance: int,
         f1_distance: float,
@@ -139,15 +139,21 @@ def calculate_distances_for_experiment(
 
         next_lines = [file_object.readline() for file_object in file_objects]
 
-    if verbosity >= 1:
-        print("Calculating Distances for")
-
     for file_object in file_objects:
         file_object.close()
 
 
-def calculate_all_distances(verbosity=1):
+def calculate_all_distances(verbosity: int = 1):
     for root, subdirs, files in os.walk(RESULTS_FOLDER):
+        result_files = list(filter(lambda x: x[3:] == "_results.tsv", files))
+        if len(result_files) > 0:
+            calculate_distances_for_experiment(root, result_files, verbosity=verbosity)
+
+
+def calculate_experiment_distances(experiment_folder_identifier, verbosity: int = 1):
+    for root, subdirs, files in os.walk(RESULTS_FOLDER):
+        if experiment_folder_identifier not in root:
+            continue
         result_files = list(filter(lambda x: x[3:] == "_results.tsv", files))
         if len(result_files) > 0:
             calculate_distances_for_experiment(root, result_files, verbosity=verbosity)

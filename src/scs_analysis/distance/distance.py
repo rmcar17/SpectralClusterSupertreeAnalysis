@@ -4,7 +4,7 @@ from cogent3.core.tree import TreeNode
 from .day_distance import ClusterTable, make_psw, rename_trees
 
 
-def rooted_rf_distance(tree_1: TreeNode, tree_2: TreeNode) -> float:
+def rooted_rf_distance(tree_1: TreeNode, tree_2: TreeNode) -> int:
     tree_1_tips = set(tree_1.get_tip_names())
     tree_2_tips = set(tree_2.get_tip_names())
 

@@ -23,7 +23,10 @@ from scs_analysis.experiment.experiment import (
     run_experiment_smidgen_og,
     run_experiment_super_triplets,
 )
-from scs_analysis.experiment.distance_calculator import calculate_all_distances
+from scs_analysis.experiment.distance_calculator import (
+    calculate_all_distances,
+    calculate_experiment_distances,
+)
 from scs_analysis.experiment.graph import graph_results
 
 from scitrack import CachingLogger
@@ -216,10 +219,24 @@ def run_experiment(all, bcd, scs, sup, mcs, dataset, dataset_params, verbose):
             )
 
 
+EXPERIMENT_FOLDER_IDENTIFIERS = {
+    "supertriplets": "SuperTripletsBenchmark",
+    "smidgen": "superfine",
+    "smidgenog": "SMIDGenOutgrouped",
+    "dcmexact": "dcm_source_trees",
+}
+
+
 @main.command(no_args_is_help=True)
+@click.option("-e", "--experiment", default="all", show_default=True)
 @_verbose
-def calculate_distances(verbose):
-    calculate_all_distances(verbosity=verbose)
+def calculate_distances(experiment, verbose):
+    if experiment == "all":
+        calculate_all_distances(verbosity=verbose)
+    else:
+        calculate_experiment_distances(
+            EXPERIMENT_FOLDER_IDENTIFIERS[experiment], verbosity=verbose
+        )
 
 
 @main.command(no_args_is_help=False)
