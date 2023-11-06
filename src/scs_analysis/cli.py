@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import click
 from scs_analysis.data_generation.dcm_partition import dcm_precise_source_trees
 from scs_analysis.data_generation.generate_model_trees import generate_model_trees
@@ -31,26 +29,24 @@ from scs_analysis.experiment.distance_calculator import (
 )
 from scs_analysis.experiment.graph import graph_results
 
-from scitrack import CachingLogger
-
 
 __author__ = "Robert McArthur"
 __copyright__ = "Copyright 2023, Robert McArthur"
 __credits__ = ["Robert McArthur"]
 __license__ = "BSD"
-__version__ = "2023.10.30"  # A DATE BASED VERSION
+__version__ = "2023.11.06"  # A DATE BASED VERSION
 __maintainer__ = "Robert McArthur"
 __email__ = "robert.mcarthur@anu.edu.au"
 __status__ = "alpha"
 
 
-LOGGER = CachingLogger()
-
-
 @click.group()
 @click.version_option(__version__)  # add version option
 def main():
-    """docstring explains what your cl app does"""
+    """
+    A command line interface for the tools used to run experiments
+    for the Spectral Cluster Supertree paper.
+    """
     pass
 
 
@@ -64,85 +60,28 @@ _verbose = click.option(
 )
 
 
-# you can define custom parsers / validators
-def _parse_csv_arg(*args) -> list:
-    return args[-1].split(",")
-
-
-_names = click.option(
-    "--names",
-    callback=_parse_csv_arg,
-    help="converts comma separated values",
-)
-
-_outpath = click.option(
-    "-o", "--outpath", type=Path, help="the input string will be cast to Path instance"
-)
-
-
-# the no_args_is_help=True means help is displayed if a
-# user doesn't provide any arguments to a subcommand.
-# Should be a click default I think!
 @main.command(no_args_is_help=True)
+@click.option("-a", "--all", is_flag=True, help="include all supertree methods.")
+@click.option("-b", "--bcd", is_flag=True, help="include bad clade deletion method.")
 @click.option(
-    "-i",
-    "--infile",
-    required=True,
-    type=click.Path(exists=True),
-    help="fails if provided value is non-existent path",
+    "-s", "--scs", is_flag=True, help="include spectral cluster supertre method."
 )
-@_outpath
-@click.option(
-    "--achoice",
-    type=click.Choice(["choice1", "choice2"]),
-    default="choice1",
-    help="make a choice",
-)
-@_names
-@click.option(
-    "-O",
-    "--overwrite",
-    is_flag=True,
-    help="overwrite results",
-)
-@click.option(
-    "--ensembl_account",
-    envvar="ENSEMBL_ACCOUNT",
-    help="shell variable with MySQL account "
-    "details, e.g. export "
-    "ENSEMBL_ACCOUNT='myhost.com jill jills_pass'",
-)
-@_verbose
-def demo_log(infile, outpath, achoice, names, overwrite, verbose, ensembl_account):
-    """what demo_log subcommand does"""
-    # capture the local variables, at this point just provided arguments
-    LOGGER.log_args()
-    LOGGER.log_versions("numpy")
-    LOGGER.input_file(infile)
-
-    LOGGER.log_file_path = outpath / "some_path.log"
-
-
-@main.command(no_args_is_help=True)
-@click.argument("message", required=True, type=str)
-@click.option("-t", "--test", is_flag=True, help="test run")
-@_verbose
-def demo_echo(message, test, verbose):
-    """what demo_echo subcommand does"""
-    for _ in range(verbose):
-        click.secho(message, fg="blue")
-
-
-@main.command(no_args_is_help=True)
-@click.option("-a", "--all", is_flag=True)
-@click.option("-b", "--bcd", is_flag=True)
-@click.option("-s", "--scs", is_flag=True)
-@click.option("-u", "--sup", is_flag=True)
-@click.option("-m", "--mcs", is_flag=True)
-@click.argument("dataset", nargs=1, required=True, type=str)
+@click.option("-u", "--sup", is_flag=True, help="include superfine method.")
+@click.option("-m", "--mcs", is_flag=True, help="include min-cut supertree method.")
+@click.argument("dataset-name", nargs=1, required=True, type=str)
 @click.argument("dataset-params", nargs=2, required=True, type=(int, int))
 @_verbose
-def run_experiment(all, bcd, scs, sup, mcs, dataset, dataset_params, verbose):
+def run_experiment(all, bcd, scs, sup, mcs, dataset_name, dataset_params, verbose):
+    """
+    Runs a supertree experiment over the given methods on a specific dataset.
+
+    DATASET_NAME is the name of the dataset. One of [supertriplets, smidgen, smidgenog, smidgenog10000, dcmexact, dcm].
+
+    DATASET_PARAMS is a tuple of integers referring to the first n numbers in that experiment's data folder.
+    For example, `scs run-experiment smidgenog 100 20` would run the experiment on the 100 taxa 20 density dataset.
+    If 0 is specified as one of the parameters, all numbers are used.
+
+    """
     methods = []
     if all:
         methods = [BCD, SCS, SUP, MCS]
@@ -156,10 +95,10 @@ def run_experiment(all, bcd, scs, sup, mcs, dataset, dataset_params, verbose):
         if mcs:
             methods.append(MCS)
 
-    dataset = dataset.lower()
+    dataset_name = dataset_name.lower()
     dataset_params = list(dataset_params)
 
-    if dataset == "supertriplets":
+    if dataset_name == "supertriplets":
         experiment = run_experiment_super_triplets
         if dataset_params[0] == 0:
             dataset_params[0] = SUPER_TRIPLET_D
@@ -169,7 +108,7 @@ def run_experiment(all, bcd, scs, sup, mcs, dataset, dataset_params, verbose):
             dataset_params[1] = SUPER_TRIPLET_K
         else:
             dataset_params[1] = [dataset_params[1]]
-    elif dataset == "smidgen":
+    elif dataset_name == "smidgen":
         experiment = run_experiment_smidgen
         if dataset_params[0] == 0:
             dataset_params[0] = SMIDGEN_TAXA
@@ -179,7 +118,7 @@ def run_experiment(all, bcd, scs, sup, mcs, dataset, dataset_params, verbose):
             dataset_params[1] = SMIDGEN_DENSITY
         else:
             dataset_params[1] = [dataset_params[1]]
-    elif dataset == "smidgenog":
+    elif dataset_name == "smidgenog":
         experiment = run_experiment_smidgen_og
         if dataset_params[0] == 0:
             dataset_params[0] = SMIDGEN_OG_NORMAL_TAXA
@@ -189,13 +128,13 @@ def run_experiment(all, bcd, scs, sup, mcs, dataset, dataset_params, verbose):
             dataset_params[1] = SMIDGEN_OG_DENSITY
         else:
             dataset_params[1] = [dataset_params[1]]
-    elif dataset == "smidgenog10000":
+    elif dataset_name == "smidgenog10000":
         experiment = run_experiment_smidgen_og
-        if len(dataset) < 2:
-            dataset.append([10000])
-        if len(dataset) < 3:
-            dataset.append([0])
-    elif dataset == "dcmexact":
+        if len(dataset_name) < 2:
+            dataset_name.append([10000])
+        if len(dataset_name) < 3:
+            dataset_name.append([0])
+    elif dataset_name == "dcmexact":
         experiment = run_experiment_dcm_exact
         if dataset_params[0] == 0:
             dataset_params[0] = DCM_TAXA
@@ -205,7 +144,7 @@ def run_experiment(all, bcd, scs, sup, mcs, dataset, dataset_params, verbose):
             dataset_params[1] = DCM_SUBTREE_SIZE
         else:
             dataset_params[1] = [dataset_params[1]]
-    elif dataset == "dcm":
+    elif dataset_name == "dcm":
         experiment = run_experiment_dcm
         if dataset_params[0] == 0:
             dataset_params[0] = DCM_TAXA
@@ -240,9 +179,20 @@ EXPERIMENT_FOLDER_IDENTIFIERS = {
 
 
 @main.command(no_args_is_help=True)
-@click.option("-e", "--experiment", default="all", show_default=True)
+@click.option(
+    "-e",
+    "--experiment",
+    default="all",
+    show_default=True,
+    help="The experiment to calculate distances for. One of [all, supertriplets, smidgen, smidgenog, dcmexact, dcm].",
+)
 @_verbose
 def calculate_distances(experiment, verbose):
+    """
+    Calculates the distance between the estimated and model trees for a given experiment.
+
+    When no experiment is specified, runs on all experiments.
+    """
     if experiment == "all":
         calculate_all_distances(verbosity=verbose)
     else:
@@ -253,20 +203,48 @@ def calculate_distances(experiment, verbose):
 
 @main.command(no_args_is_help=False)
 def plot():
+    """
+    Draws graphs for all experiments distances have been calculated for.
+    """
     graph_results("images/", "results/")
 
 
 @main.command(no_args_is_help=True)
-@click.option("-b", "--birth_rate", default=1.0, show_default=True)
-@click.option("-d", "--death_rate", default=0.2, show_default=True)
-@click.option("-t", "--target_height", default=1.0, show_default=True)
-@click.option("-i", "--initial_scaling_factor", default=1.0, show_default=True)
+@click.option(
+    "-b",
+    "--birth_rate",
+    default=1.0,
+    show_default=True,
+    help="the birth rate for the birth-death process",
+)
+@click.option(
+    "-d",
+    "--death_rate",
+    default=0.2,
+    show_default=True,
+    help="the death rate for the birth-death process",
+)
+@click.option(
+    "-t",
+    "--target_height",
+    default=1.0,
+    show_default=True,
+    help="the distance from the root to every tip in the generated birth-death tree -- if 0 no scaling is applied",
+)
+@click.option(
+    "-i",
+    "--initial_scaling_factor",
+    default=1.0,
+    show_default=True,
+    help="the initial scaling factor to scale the branch length at the root",
+)
 @click.option(
     "-n",
     "--normal_dist_params",
     default=(0.0, 0.05),
     type=(float, float),
     show_default=True,
+    help="the normal distribution that is added to the scaling factor when moving dow the tree",
 )
 @click.option(
     "-s",
@@ -274,9 +252,10 @@ def plot():
     type=(float, float),
     default=(0.05, 8.0),
     show_default=True,
+    help="the minimum and maximum bounds of the scaling factor",
 )
 @click.argument("num_trees", type=int)
-@click.argument("taxa", type=int)
+@click.argument("num_taxa", type=int)
 @_verbose
 def create_bd_trees(
     birth_rate,
@@ -286,11 +265,19 @@ def create_bd_trees(
     normal_dist_params,
     scaling_factor_bounds,
     num_trees,
-    taxa,
+    num_taxa,
     verbose,
 ):
+    """
+    Creates birth-death trees with the specified parameters.
+    Depending on the input options, the trees may not be ultrametric.
+
+    NUM_TREES is the number of trees it generates.
+
+    NUM_TAXA is the number of taxa in the resulting tree.
+    """
     generate_model_trees(
-        taxa,
+        num_taxa,
         num_trees,
         birth_rate,
         death_rate,
@@ -303,27 +290,57 @@ def create_bd_trees(
 
 
 @main.command(no_args_is_help=True)
-@click.option("-l", "--length", default=1000, show_default=True)
-@click.argument("taxa", type=int)
+@click.option(
+    "-l",
+    "--length",
+    default=1000,
+    show_default=True,
+    help="the length of the sequence alignment",
+)
+@click.argument("num_taxa", type=int)
 @_verbose
-def sim_bd_seqs(length, taxa, verbose):
-    simulate_alignments(taxa, length, verbosity=verbose)
+def sim_bd_seqs(length, num_taxa, verbose):
+    """
+    Given the generated model trees of a specific number of taxa,
+    simulates sequence alignments for the taxa over each of the trees.
+
+    This is performed under a strand-symmetric general nucleotide model.
+    """
+    simulate_alignments(num_taxa, length, verbosity=verbose)
 
 
 @main.command(no_args_is_help=True)
-@click.argument("taxa", type=int)
+@click.argument("num_taxa", type=int)
 @click.argument("max_subproblem_size", type=int)
 @_verbose
-def dcm_source_trees(taxa, max_subproblem_size, verbose):
-    dcm_precise_source_trees(taxa, max_subproblem_size, verbosity=verbose)
+def dcm_source_trees(num_taxa, max_subproblem_size, verbose):
+    """
+    Generates DCM source trees for the given number of taxa.
+    Generates source trees down to a maximum subproblem size.
+
+    NUM_TAXA is the number of taxa.
+
+    MAX_SUBPROBLEM_SIZE is the maximum size of any generated tree.
+    """
+    dcm_precise_source_trees(num_taxa, max_subproblem_size, verbosity=verbose)
 
 
 @main.command(no_args_is_help=True)
-@click.argument("taxa", type=int)
+@click.argument("num_taxa", type=int)
 @click.argument("max_subproblem_size", type=int)
 @_verbose
-def iqtree(taxa, max_subproblem_size, verbose):
-    generate_iq_trees(taxa, max_subproblem_size, verbosity=verbose)
+def iqtree(num_taxa, max_subproblem_size, verbose):
+    """
+    Given the taxa in each of the DCM source trees for a number of
+    taxa and maximum subproblem size, and the sequence alignments over
+    all the taxa in the model tree, generates source trees using IQTree2
+    under a strand-symmetric model.
+
+    NUM_TAXA is the number of taxa.
+
+    MAX_SUBPROBLEM_SIZE is the maximum size of the DCM trees.
+    """
+    generate_iq_trees(num_taxa, max_subproblem_size, verbosity=verbose)
 
 
 if __name__ == "__main__":

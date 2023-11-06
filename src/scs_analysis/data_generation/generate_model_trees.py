@@ -20,7 +20,8 @@ def generate_model_tree(
     model_tree = birth_death_tree(
         birth_rate, death_rate, stopping_taxa=taxa, restart_on_fail=True, rename=False
     )
-    set_tree_height(model_tree, target_height)
+    if target_height != 0:
+        set_tree_height(model_tree, target_height)
     randomly_scale_tree_height(
         model_tree,
         initial_scaling_factor,
