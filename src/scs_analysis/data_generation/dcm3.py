@@ -91,7 +91,6 @@ def ucs_ascending(initial_node: PhyloNode) -> Set:
 def compute_short_subtree(internal_node: PhyloNode) -> Set:
     # Compute the short subtree for a specific internal node
     assert internal_node.parent is not None  # The internal node is not the root.
-    # TODO I can enforce bifurcating, though can also extend it to handle more general.
     short_subtree = set()
 
     for child in internal_node.children:

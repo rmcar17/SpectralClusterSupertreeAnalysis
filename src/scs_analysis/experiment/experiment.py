@@ -324,17 +324,3 @@ def run_experiment_dcm(
             calculate_distances=calculate_distances,
             logger=logger,
         )
-
-
-if __name__ == "__main__":
-    methods = [SCS, BCD, SUP, MCS]
-    taxa = 100
-    density = 20
-    run_experiment_smidgen_og(
-        taxa,
-        density,
-        methods,
-        verbosity=1,
-        calculate_distances=False,
-        result_logging=True,
-    )
