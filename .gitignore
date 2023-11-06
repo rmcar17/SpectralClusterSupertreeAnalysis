@@ -35,6 +35,9 @@ methods/bcd/data/*
 
 tmp.nwk
 
+tmp/*
+!tmp/.gitkeep
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
