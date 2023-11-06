@@ -15,8 +15,8 @@ SMIDGEN_DENSITY = (20, 50, 75, 100)
 SMIDGEN_OG_NORMAL_TAXA = (100, 500, 1000, 10000)
 SMIDGEN_OG_DENSITY = (20, 50, 75, 100)
 
-DCM_EXACT_TAXA = (1000,)
-DCM_EXACT_SUBTREE_SIZE = (100,)
+DCM_TAXA = (1000,)
+DCM_SUBTREE_SIZE = (100,)
 
 SUP = "SUP"
 SCS = "SCS"
@@ -264,8 +264,8 @@ def run_experiment_dcm_exact(
     calculate_distances: bool = True,
     result_logging: bool = False,
 ):
-    assert taxa in DCM_EXACT_TAXA
-    assert subtree_size in DCM_EXACT_SUBTREE_SIZE
+    assert taxa in DCM_TAXA
+    assert subtree_size in DCM_SUBTREE_SIZE
 
     if result_logging:
         logger = ResultsLogger(
@@ -278,6 +278,41 @@ def run_experiment_dcm_exact(
 
     for i in range(number_of_experiments):
         source_file = f"data/birth_death/{taxa}/dcm_source_trees/{subtree_size}/bd.{i}.source_trees"
+        model_file = f"data/birth_death/{taxa}/model_trees/bd.{i}.model_tree"
+        if verbosity >= 1:
+            print(f"Results for {i} ({source_file}):")
+        run_methods(
+            source_file,
+            model_file,
+            methods,
+            verbosity=verbosity,
+            calculate_distances=calculate_distances,
+            logger=logger,
+        )
+
+
+def run_experiment_dcm(
+    taxa: int,
+    subtree_size: int,
+    methods: List,
+    verbosity: int = 1,
+    calculate_distances: bool = True,
+    result_logging: bool = False,
+):
+    assert taxa in DCM_TAXA
+    assert subtree_size in DCM_SUBTREE_SIZE
+
+    if result_logging:
+        logger = ResultsLogger(
+            RESULTS_FOLDER, f"birth_death/{taxa}/iq_source_trees/{subtree_size}/"
+        )
+    else:
+        logger = None
+
+    number_of_experiments = 10
+
+    for i in range(number_of_experiments):
+        source_file = f"data/birth_death/{taxa}/iq_source_trees/{subtree_size}/bd.{i}.source_trees"
         model_file = f"data/birth_death/{taxa}/model_trees/bd.{i}.model_tree"
         if verbosity >= 1:
             print(f"Results for {i} ({source_file}):")

@@ -8,8 +8,8 @@ from scs_analysis.data_generation.simulate_alignments import simulate_alignments
 from scs_analysis.distance.distance import *
 from scs_analysis.experiment.experiment import (
     BCD,
-    DCM_EXACT_SUBTREE_SIZE,
-    DCM_EXACT_TAXA,
+    DCM_SUBTREE_SIZE,
+    DCM_TAXA,
     SCS,
     SMIDGEN_DENSITY,
     SMIDGEN_OG_DENSITY,
@@ -19,6 +19,7 @@ from scs_analysis.experiment.experiment import (
     MCS,
     SUPER_TRIPLET_D,
     SUPER_TRIPLET_K,
+    run_experiment_dcm,
     run_experiment_dcm_exact,
     run_experiment_smidgen,
     run_experiment_smidgen_og,
@@ -197,14 +198,23 @@ def run_experiment(all, bcd, scs, sup, mcs, dataset, dataset_params, verbose):
     elif dataset == "dcmexact":
         experiment = run_experiment_dcm_exact
         if dataset_params[0] == 0:
-            dataset_params[0] = DCM_EXACT_TAXA
+            dataset_params[0] = DCM_TAXA
         else:
             dataset_params[0] = [dataset_params[0]]
         if dataset_params[1] == 0:
-            dataset_params[1] = DCM_EXACT_SUBTREE_SIZE
+            dataset_params[1] = DCM_SUBTREE_SIZE
         else:
             dataset_params[1] = [dataset_params[1]]
-
+    elif dataset == "dcm":
+        experiment = run_experiment_dcm
+        if dataset_params[0] == 0:
+            dataset_params[0] = DCM_TAXA
+        else:
+            dataset_params[0] = [dataset_params[0]]
+        if dataset_params[1] == 0:
+            dataset_params[1] = DCM_SUBTREE_SIZE
+        else:
+            dataset_params[1] = [dataset_params[1]]
     else:
         raise ValueError("Invalid Experiment")
 
@@ -225,6 +235,7 @@ EXPERIMENT_FOLDER_IDENTIFIERS = {
     "smidgen": "superfine",
     "smidgenog": "SMIDGenOutgrouped",
     "dcmexact": "dcm_source_trees",
+    "dcm": "iq_source_trees",
 }
 
 
