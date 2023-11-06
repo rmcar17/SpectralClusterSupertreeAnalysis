@@ -125,13 +125,6 @@ def min_cut_supertree(
     # The child trees corresponding to the components of the graph
     child_trees = []
 
-    # TODO: What if there are more than two components?
-    # Previously I randomly resolved to make bifurcating.
-    # I suppose now it makes more sense to have that as a
-    # post-processing step?
-    # Slightly frustrating since spectral clustering will
-    # always generate two components.
-
     for component in components:
         component = _component_to_names_set(component)
         # Trivial case for if the size of the component is <=2
@@ -160,9 +153,6 @@ def min_cut_supertree(
             )
         )
 
-        # It is possible that some tip names are missed (particularly
-        # if inducing would only leave length 1). TODO: think more about when this case
-        # if exhibited
         missing_tips = component.difference(_get_all_tip_names(new_induced_trees))
 
         # In this case, treat these tips as individual subtrees
