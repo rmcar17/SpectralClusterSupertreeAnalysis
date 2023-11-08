@@ -1,6 +1,12 @@
+import time
+
 from typing import Any, List, Set
-import networkx as nx
+
+import numpy as np
+
 from cogent3.core.tree import TreeNode
+from scipy.optimize import linear_sum_assignment
+
 from .day_distance import ClusterTable, make_psw, rename_trees
 
 
@@ -53,7 +59,9 @@ def get_clusters(tree: TreeNode) -> List[Set[Any]]:
     return clusters
 
 
-def matching_cluster_distance(tree_1: TreeNode, tree_2: TreeNode) -> int:
+def matching_cluster_distance(
+    tree_1: TreeNode, tree_2: TreeNode, remove_identical=True
+) -> int:
     """Matching cluster distance between rooted trees.
 
     Source:
@@ -76,37 +84,30 @@ def matching_cluster_distance(tree_1: TreeNode, tree_2: TreeNode) -> int:
 
     clusters_1 = get_clusters(tree_1)
     clusters_2 = get_clusters(tree_2)
+    if remove_identical:
+        intersection = set(map(frozenset, clusters_1)).intersection(
+            map(frozenset, clusters_2)
+        )
+        clusters_1 = list(
+            map(set, set(map(frozenset, clusters_1)).difference(intersection))
+        )
+        clusters_2 = list(
+            map(set, set(map(frozenset, clusters_2)).difference(intersection))
+        )
 
     while len(clusters_1) < len(clusters_2):
         clusters_1.append(set())
     while len(clusters_2) < len(clusters_1):
         clusters_2.append(set())
 
-    cluster_num = 0
-    cluster_ids_1 = {}
-    for cluster in clusters_1:
-        cluster_ids_1[cluster_num] = cluster
-        cluster_num += 1
-    cluster_ids_2 = {}
-    for cluster in clusters_2:
-        cluster_ids_2[cluster_num] = cluster
-        cluster_num += 1
+    adjacency = np.zeros(shape=(len(clusters_1), len(clusters_2)))
 
-    graph = nx.Graph()
+    for i, cluster_1 in enumerate(clusters_1):
+        for j, cluster_2 in enumerate(clusters_2):
+            adjacency[i, j] = len(cluster_1.symmetric_difference(cluster_2))
 
-    graph.add_nodes_from(cluster_ids_1.keys())
-    graph.add_nodes_from(cluster_ids_2.keys())
-
-    for node_1, cluster_1 in cluster_ids_1.items():
-        for node_2, cluster_2 in cluster_ids_2.items():
-            graph.add_edge(
-                node_1, node_2, weight=len(cluster_1.symmetric_difference(cluster_2))
-            )
-
-    distance = 0
-    matching_edges = nx.min_weight_matching(graph)
-    for edge in matching_edges:
-        distance += graph.edges[edge]["weight"]
+    row_ind, col_ind = linear_sum_assignment(adjacency)
+    distance = adjacency[row_ind, col_ind].sum()
 
     return distance
 
