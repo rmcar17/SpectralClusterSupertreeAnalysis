@@ -1,3 +1,4 @@
+import random
 import click
 from scs_analysis.data_generation.dcm_partition import dcm_precise_source_trees
 from scs_analysis.data_generation.generate_model_trees import generate_model_trees
@@ -28,7 +29,7 @@ from scs_analysis.experiment.distance_calculator import (
     calculate_experiment_distances,
 )
 from scs_analysis.experiment.graph import graph_results
-
+import time
 
 __author__ = "Robert McArthur"
 __copyright__ = "Copyright 2023, Robert McArthur"
@@ -50,13 +51,20 @@ def main():
     pass
 
 
-# note that I often define reusable options in a central place
+# Common args
 _verbose = click.option(
     "-v",
     "--verbose",
     default=0,
     show_default=True,
     help="verbosity level",
+)
+_seed = click.option(
+    "-r",
+    "--rand",
+    default=time.time(),
+    show_default=False,
+    help="random seed; if not specified uses the system time.",
 )
 
 
@@ -71,7 +79,10 @@ _verbose = click.option(
 @click.argument("dataset-name", nargs=1, required=True, type=str)
 @click.argument("dataset-params", nargs=2, required=True, type=(int, int))
 @_verbose
-def run_experiment(all, bcd, scs, sup, mcs, dataset_name, dataset_params, verbose):
+@_seed
+def run_experiment(
+    all, bcd, scs, sup, mcs, dataset_name, dataset_params, verbose, rand
+):
     """
     Runs a supertree experiment over the given methods on a specific dataset.
 
@@ -157,6 +168,8 @@ def run_experiment(all, bcd, scs, sup, mcs, dataset_name, dataset_params, verbos
     else:
         raise ValueError("Invalid Experiment")
 
+    rng = random.Random(rand)
+
     for param_1 in dataset_params[0]:
         for param_2 in dataset_params[1]:
             experiment(
@@ -166,6 +179,7 @@ def run_experiment(all, bcd, scs, sup, mcs, dataset_name, dataset_params, verbos
                 verbosity=verbose,
                 calculate_distances=False,
                 result_logging=True,
+                rng=rng,
             )
 
 

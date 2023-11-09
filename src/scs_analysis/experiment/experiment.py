@@ -1,10 +1,19 @@
-import subprocess
-import time
 import os
+import random
+import subprocess
+import sys
+import time
+
 from typing import List, Optional
+
 from cogent3 import make_tree
 from cogent3.core.tree import TreeNode
-from scs_analysis.distance.distance import matching_cluster_distance, rooted_rf_distance
+
+from scs_analysis.distance.distance import (
+    matching_cluster_distance,
+    rooted_rf_distance,
+)
+
 
 SUPER_TRIPLET_D = (25, 50, 75)
 SUPER_TRIPLET_K = (10, 20, 30, 40, 50)
@@ -15,14 +24,8 @@ SMIDGEN_DENSITY = (20, 50, 75, 100)
 SMIDGEN_OG_NORMAL_TAXA = (100, 500, 1000, 10000)
 SMIDGEN_OG_DENSITY = (20, 50, 75, 100)
 
-DCM_TAXA = (
-    500,
-    1000,
-)
-DCM_SUBTREE_SIZE = (
-    50,
-    100,
-)
+DCM_TAXA = (300, 500, 1000, 10000)
+DCM_SUBTREE_SIZE = (40, 50, 100)
 
 SUP = "SUP"
 SCS = "SCS"
@@ -95,7 +98,11 @@ def run_methods(
     force_bifurcating: bool = False,
     calculate_distances: bool = True,
     logger: Optional[ResultsLogger] = None,
+    rng: Optional[random.Random] = None,
 ):
+    if rng is None:
+        rng = random.Random()
+
     results = {}
     for method in methods:
         if logger is not None:
@@ -114,9 +121,12 @@ def run_methods(
 
         command = [
             SCRIPT_PATH + SCRIPTS[method],
-            source_tree_file,
             *OPTIONS.get(method, DEFAULT_OPTIONS),
         ]
+        if method == "SCS":
+            command.extend(["-s", str(rng.randrange(2**32))])
+        command.append(source_tree_file)
+
         if verbosity >= 1:
             print(" ".join(command))
 
@@ -125,7 +135,7 @@ def run_methods(
         end_time = time.time()
 
         try:
-            tree = make_tree(result.stdout.decode("utf-8").strip())
+            tree = make_tree(result.stdout.decode("utf-8").strip())  # type: ignore
             if force_bifurcating:
                 tree = tree.bifurcating()
         except:
@@ -169,9 +179,13 @@ def run_experiment_super_triplets(
     verbosity: int = 1,
     calculate_distances: bool = True,
     result_logging: bool = False,
+    rng: Optional[random.Random] = None,
 ):
     assert d in SUPER_TRIPLET_D
     assert k in SUPER_TRIPLET_K
+
+    if rng is None:
+        rng = random.Random()
 
     if result_logging:
         logger = ResultsLogger(RESULTS_FOLDER, f"SuperTripletsBenchmark/d{d}/k{k}/")
@@ -192,6 +206,7 @@ def run_experiment_super_triplets(
             verbosity=verbosity,
             calculate_distances=calculate_distances,
             logger=logger,
+            rng=rng,
         )
 
 
@@ -202,9 +217,13 @@ def run_experiment_smidgen(
     verbosity: int = 1,
     calculate_distances: bool = True,
     result_logging: bool = False,
+    rng: Optional[random.Random] = None,
 ):
     assert taxa in SMIDGEN_TAXA
     assert density in SMIDGEN_DENSITY
+
+    if rng is None:
+        rng = random.Random()
 
     if result_logging:
         logger = ResultsLogger(RESULTS_FOLDER, f"superfine/{taxa}-taxa/{density}/")
@@ -223,6 +242,7 @@ def run_experiment_smidgen(
             verbosity=verbosity,
             calculate_distances=calculate_distances,
             logger=logger,
+            rng=rng,
         )
 
 
@@ -233,12 +253,16 @@ def run_experiment_smidgen_og(
     verbosity: int = 1,
     calculate_distances: bool = True,
     result_logging: bool = False,
+    rng: Optional[random.Random] = None,
 ):
     assert taxa in SMIDGEN_OG_NORMAL_TAXA or taxa == 10000
     if taxa == 10000:
         assert density == 0
     else:
         assert density in SMIDGEN_OG_DENSITY
+
+    if rng is None:
+        rng = random.Random()
 
     if result_logging:
         logger = ResultsLogger(RESULTS_FOLDER, f"SMIDGenOutgrouped/{taxa}/{density}/")
@@ -259,6 +283,7 @@ def run_experiment_smidgen_og(
             verbosity=verbosity,
             calculate_distances=calculate_distances,
             logger=logger,
+            rng=rng,
         )
 
 
@@ -269,9 +294,13 @@ def run_experiment_dcm_exact(
     verbosity: int = 1,
     calculate_distances: bool = True,
     result_logging: bool = False,
+    rng: Optional[random.Random] = None,
 ):
     assert taxa in DCM_TAXA
     assert subtree_size in DCM_SUBTREE_SIZE
+
+    if rng is None:
+        rng = random.Random()
 
     if result_logging:
         logger = ResultsLogger(
@@ -294,6 +323,7 @@ def run_experiment_dcm_exact(
             verbosity=verbosity,
             calculate_distances=calculate_distances,
             logger=logger,
+            rng=rng,
         )
 
 
@@ -304,9 +334,13 @@ def run_experiment_dcm(
     verbosity: int = 1,
     calculate_distances: bool = True,
     result_logging: bool = False,
+    rng: Optional[random.Random] = None,
 ):
     assert taxa in DCM_TAXA
     assert subtree_size in DCM_SUBTREE_SIZE
+
+    if rng is None:
+        rng = random.Random()
 
     if result_logging:
         logger = ResultsLogger(
@@ -329,4 +363,5 @@ def run_experiment_dcm(
             verbosity=verbosity,
             calculate_distances=calculate_distances,
             logger=logger,
+            rng=rng,
         )

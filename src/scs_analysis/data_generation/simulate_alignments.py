@@ -10,7 +10,7 @@ rng = default_rng(seed=None)  # setting seed will allow for reproducibility
 def get_sim_params():
     """fits a ssGN model to the sample alignment and returns the fitted likelihood function"""
     aln: cogent3.Alignment = cogent3.load_aligned_seqs(
-        "data/alignment/197113_332182_17210.nexus.gz", moltype="dna"
+        "data/alignment/197113_332182_17210.nexus.gz", moltype="dna"  # type: ignore
     )
     aln = aln.omit_gap_pos(allowed_gap_frac=0)
     tree = cogent3.make_tree("(197113,(332182,17210))")
