@@ -107,7 +107,7 @@ def matching_cluster_distance(
             adjacency[i, j] = len(cluster_1.symmetric_difference(cluster_2))
 
     row_ind, col_ind = linear_sum_assignment(adjacency)
-    distance = adjacency[row_ind, col_ind].sum()
+    distance = int(adjacency[row_ind, col_ind].sum())
 
     return distance
 
