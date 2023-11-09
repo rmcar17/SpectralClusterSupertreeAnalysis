@@ -1,3 +1,7 @@
+import random
+from typing import Optional
+
+import numpy as np
 from .birth_death import birth_death_tree
 from .tree_height import randomly_scale_tree_height, set_tree_height
 import os
@@ -16,14 +20,23 @@ def generate_model_tree(
     adder_std: float = 0.05,
     scaling_factor_lb: float = 0.05,
     scaling_factor_ub: float = 8.0,
+    rng: Optional[random.Random] = None,
 ) -> None:
+    if rng is None:
+        rng = random.Random()
     model_tree = birth_death_tree(
-        birth_rate, death_rate, stopping_taxa=taxa, restart_on_fail=True, rename=False
+        birth_rate,
+        death_rate,
+        stopping_taxa=taxa,
+        restart_on_fail=True,
+        rename=False,
+        rng=rng,
     )
     if target_height != 0:
         set_tree_height(model_tree, target_height)
     randomly_scale_tree_height(
         model_tree,
+        np.random.RandomState(rng.randrange(2**32)),
         initial_scaling_factor,
         adder_mean,
         adder_std,
@@ -47,7 +60,10 @@ def generate_model_trees(
     scaling_factor_lb: float = 0.05,
     scaling_factor_ub: float = 8.0,
     verbosity=0,
+    rng=None,
 ) -> None:
+    if rng is None:
+        rng = random.Random()
     write_path = BIRTH_DEATH_FOLDER + f"{taxa}/model_trees/"
     if not os.path.exists(write_path):
         os.makedirs(write_path)
@@ -66,4 +82,5 @@ def generate_model_trees(
             adder_std,
             scaling_factor_lb,
             scaling_factor_ub,
+            rng,
         )

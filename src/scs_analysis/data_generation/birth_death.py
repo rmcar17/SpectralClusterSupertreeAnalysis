@@ -19,6 +19,7 @@ def birth_death_tree(
     stopping_taxa: Optional[int] = None,
     restart_on_fail=False,
     rename=False,
+    rng: Optional[random.Random] = None,
 ) -> PhyloNode:
     """
     Generates a rooted phylogenetic tree according to the birth-death model given a birth rate,
@@ -51,6 +52,9 @@ def birth_death_tree(
     if stopping_taxa is not None and stopping_taxa < 2:
         raise ValueError("Stopping taxa must be at least 2.")
 
+    if rng is None:
+        rng = random.Random()
+
     total_rate = birth_rate + death_rate
     birth_probability = birth_rate / total_rate
 
@@ -60,7 +64,7 @@ def birth_death_tree(
     current_time = 0
     taxa_used = 2
     while True:
-        waiting_time = random.expovariate(len(tips) * total_rate)
+        waiting_time = rng.expovariate(len(tips) * total_rate)
         current_time += waiting_time
 
         if stopping_time is not None and current_time >= stopping_time:
@@ -75,9 +79,9 @@ def birth_death_tree(
         if len(tips) == stopping_taxa:
             break
 
-        if random.random() < birth_probability:
+        if rng.random() < birth_probability:
             # Handle birth event
-            birth_tip = tips.pop(random.randrange(0, len(tips)))
+            birth_tip = tips.pop(rng.randrange(0, len(tips)))
             old_tip_name = birth_tip.name
             assert isinstance(old_tip_name, str)
             birth_tip.name = None
@@ -87,7 +91,7 @@ def birth_death_tree(
             tips.extend(birth_tip.children)
         else:
             # Handle death event
-            extinct_tip = tips.pop(random.randrange(0, len(tips)))
+            extinct_tip = tips.pop(rng.randrange(0, len(tips)))
 
             parent: PhyloNode = extinct_tip.parent
             parent.remove_node(extinct_tip)

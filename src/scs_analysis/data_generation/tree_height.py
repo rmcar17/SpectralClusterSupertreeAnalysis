@@ -5,6 +5,7 @@ import math
 
 def randomly_scale_tree_height(
     tree: PhyloNode,
+    random_state: np.random.RandomState,
     scaling_factor: float = 1.0,
     adder_mean: float = 0.0,
     adder_std: float = 0.05,
@@ -15,7 +16,7 @@ def randomly_scale_tree_height(
         tree.length *= scaling_factor
     if not tree.is_tip():
         for child in tree:
-            scale_adder = np.random.normal(adder_mean, adder_std)
+            scale_adder = random_state.normal(adder_mean, adder_std)
 
             new_scaling_factor = scaling_factor + scale_adder
 
@@ -25,6 +26,7 @@ def randomly_scale_tree_height(
 
             randomly_scale_tree_height(
                 child,
+                random_state,
                 new_scaling_factor,
                 adder_mean,
                 adder_std,
@@ -118,6 +120,6 @@ if __name__ == "__main__":
 
     print("All successfully changed:", is_tree_correct_height(tree, target_height))
 
-    randomly_scale_tree_height(tree)
+    randomly_scale_tree_height(tree, np.random.RandomState())
 
     print("After random scaling:", tree)

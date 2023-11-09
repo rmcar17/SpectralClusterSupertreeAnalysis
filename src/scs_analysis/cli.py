@@ -271,6 +271,7 @@ def plot():
 @click.argument("num_trees", type=int)
 @click.argument("num_taxa", type=int)
 @_verbose
+@_seed
 def create_bd_trees(
     birth_rate,
     death_rate,
@@ -281,6 +282,7 @@ def create_bd_trees(
     num_trees,
     num_taxa,
     verbose,
+    rand,
 ):
     """
     Creates birth-death trees with the specified parameters.
@@ -290,6 +292,7 @@ def create_bd_trees(
 
     NUM_TAXA is the number of taxa in the resulting tree.
     """
+    rng = random.Random(rand)
     generate_model_trees(
         num_taxa,
         num_trees,
@@ -300,6 +303,7 @@ def create_bd_trees(
         *normal_dist_params,
         *scaling_factor_bounds,
         verbosity=verbose,
+        rng=rng,
     )
 
 
