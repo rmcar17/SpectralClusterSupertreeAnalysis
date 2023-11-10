@@ -83,12 +83,25 @@ def generate_iq_trees(taxa: int, max_subproblem_size: int, verbosity=1):
             for tree_line in f:
                 dcm_trees.append(make_tree(tree_line.strip()))
 
-        iq_trees = []
+        start_index = 0
+        if os.path.exists(iq_path + f"bd.{tree_identifier}.source_trees"):
+            with open(iq_path + f"bd.{tree_identifier}.source_trees", "r") as f:
+                for i, line in enumerate(f):
+                    assert set(make_tree(line.strip()).get_tip_names()) == set(
+                        dcm_trees[i].get_tip_names()
+                    )
+                    start_index += 1
+
         for i, tree in enumerate(dcm_trees):
+            if i < start_index:
+                if verbosity >= 1:
+                    print(
+                        f"IQTree already exists for source tree {i+1} of {len(dcm_trees)}"
+                    )
+                continue
             if verbosity >= 1:
                 print(f"Running IQTree on source tree {i+1} of {len(dcm_trees)}")
-            iq_trees.append(generate_iq_tree_for(tree, alignment))
 
-        with open(iq_path + f"bd.{tree_identifier}.source_trees", "w") as f:
-            for tree in iq_trees:
-                f.write(str(tree) + "\n")
+            iq_tree = generate_iq_tree_for(tree, alignment)
+            with open(iq_path + f"bd.{tree_identifier}.source_trees", "a") as f:
+                f.write(str(iq_tree) + "\n")
