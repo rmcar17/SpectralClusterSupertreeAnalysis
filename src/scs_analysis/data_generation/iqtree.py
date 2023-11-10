@@ -16,7 +16,7 @@ TMP_IQ_TREE_ALN_FILE = "tmp.fasta"
 def clean_tmp_iqtree_directory() -> None:
     if not os.path.exists(TMP_IQ_TREE_PATH):
         return
-    files = os.listdir(TMP_IQ_TREE_PATH)
+    files = sorted(os.listdir(TMP_IQ_TREE_PATH))
     for file in files:
         os.remove(TMP_IQ_TREE_PATH + file)
 
@@ -62,10 +62,12 @@ def generate_iq_trees(taxa: int, max_subproblem_size: int, verbosity=1):
     if not os.path.exists(iq_path):
         os.makedirs(iq_path)
 
-    tree_files = list(
-        filter(
-            lambda x: x.startswith("bd.") and x.endswith(".source_trees"),
-            os.listdir(dcm_path),
+    tree_files = sorted(
+        list(
+            filter(
+                lambda x: x.startswith("bd.") and x.endswith(".source_trees"),
+                os.listdir(dcm_path),
+            )
         )
     )
     for i, file_name in enumerate(tree_files):

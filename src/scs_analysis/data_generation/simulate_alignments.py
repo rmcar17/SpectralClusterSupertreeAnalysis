@@ -45,10 +45,12 @@ def simulate_alignments(taxa: int, align_length: int = 1000, verbosity=0):
     if not os.path.exists(seq_path):
         os.makedirs(seq_path)
 
-    tree_files = list(
-        filter(
-            lambda x: x.startswith("bd.") and x.endswith(".model_tree"),
-            os.listdir(tree_path),
+    tree_files = sorted(
+        list(
+            filter(
+                lambda x: x.startswith("bd.") and x.endswith(".model_tree"),
+                os.listdir(tree_path),
+            )
         )
     )
     for i, file_name in enumerate(tree_files):
