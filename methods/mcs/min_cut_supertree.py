@@ -116,9 +116,7 @@ def min_cut_supertree(
                 pcg_edges,
                 pcg_weights,
                 taxa_ocurrences,
-                taxa_co_occurrences,
-                trees,
-                weights,
+                taxa_co_occurrences
             )
         components = min_cut_partition(pcg_vertices, pcg_weights)
 

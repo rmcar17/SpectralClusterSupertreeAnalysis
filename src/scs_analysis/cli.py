@@ -76,12 +76,13 @@ _seed = click.option(
 )
 @click.option("-u", "--sup", is_flag=True, help="include superfine method.")
 @click.option("-m", "--mcs", is_flag=True, help="include min-cut supertree method.")
+@click.option("-n", "--name", type=str, help="name of method")
 @click.argument("dataset-name", nargs=1, required=True, type=str)
 @click.argument("dataset-params", nargs=2, required=True, type=(int, int))
 @_verbose
 @_seed
 def run_experiment(
-    all, bcd, scs, sup, mcs, dataset_name, dataset_params, verbose, rand
+    all, bcd, scs, sup, mcs, name, dataset_name, dataset_params, verbose, rand
 ):
     """
     Runs a supertree experiment over the given methods on a specific dataset.
@@ -105,6 +106,8 @@ def run_experiment(
             methods.append(SUP)
         if mcs:
             methods.append(MCS)
+    if name:
+        methods = [name.upper()]
 
     dataset_name = dataset_name.lower()
     dataset_params = list(dataset_params)
@@ -141,10 +144,8 @@ def run_experiment(
             dataset_params[1] = [dataset_params[1]]
     elif dataset_name == "smidgenog10000":
         experiment = run_experiment_smidgen_og
-        if len(dataset_name) < 2:
-            dataset_name.append([10000])
-        if len(dataset_name) < 3:
-            dataset_name.append([0])
+        dataset_params[0]=[10000]
+        dataset_params[1] =[0]
     elif dataset_name == "dcmexact":
         experiment = run_experiment_dcm_exact
         if dataset_params[0] == 0:

@@ -24,13 +24,26 @@ SMIDGEN_DENSITY = (20, 50, 75, 100)
 SMIDGEN_OG_NORMAL_TAXA = (100, 500, 1000, 10000)
 SMIDGEN_OG_DENSITY = (20, 50, 75, 100)
 
-DCM_TAXA = (300, 500, 1000, 10000)
-DCM_SUBTREE_SIZE = (40, 50, 100)
+DCM_TAXA = (500, 1000, 2000, 5000, 10000)
+DCM_SUBTREE_SIZE = (50, 100)
 
 SUP = "SUP"
 SCS = "SCS"
 MCS = "MCS"
 BCD = "BCD"
+BCDG = "BCD_GSCM"
+BCDN = "BCD_NO_GSCM"
+SCS_FAST = "SCS_FAST"
+
+METHODS = {
+    SUP: "SUP",
+    SCS: "SCS",
+    MCS: "MCS",
+    BCD: "BCD",
+    BCDG: "BCD_GSCM",
+    BCDN: "BCD_NO_GSCM",
+    SCS_FAST: "SCS_FAST",
+}
 
 SCRIPT_PATH = "scripts/method_scripts/"
 RESULTS_FOLDER = "results/"
@@ -39,7 +52,9 @@ SCRIPTS = {
     SUP: "run_sup.sh",
     SCS: "run_scs.sh",
     MCS: "run_mcs.sh",
-    BCD: "run_bcd.sh",
+    BCDG: "run_bcd_gscm.sh",
+    BCDN: "run_bcd_no_gscm.sh",
+    SCS_FAST: "run_scs_fast.sh",
 }
 
 OPTIONS = {}
@@ -52,7 +67,12 @@ class ResultsLogger:
         self.file_suffix = "_results.tsv"
 
         if not os.path.exists(self.write_directory):
-            os.makedirs(self.write_directory)
+            try:
+                os.makedirs(self.write_directory)
+            except Exception as e:
+                time.sleep(1)
+                if not os.path.exists(self.write_directory):
+                    raise e
 
     def result_already_exists(self, method: str, source_tree_file: str) -> bool:
         file_path = self.format_file_path(method)
@@ -61,7 +81,7 @@ class ResultsLogger:
 
         with open(file_path, "r") as f:
             for line in f:
-                mtf, stf, wall_time, tree = line.strip("\n").split("\t")
+                mtf, stf, wall_time, cpu_time, tree = line.strip("\n").split("\t")
                 if stf == source_tree_file:
                     return True
         return False
@@ -72,6 +92,7 @@ class ResultsLogger:
         model_tree_file: Optional[str],
         source_tree_file: str,
         wall_time: float,
+        cpu_time: float,
         tree: TreeNode,
     ) -> None:
         with open(self.format_file_path(method), "a") as f:
@@ -82,8 +103,10 @@ class ResultsLogger:
                 + "\t"
                 + str(wall_time)
                 + "\t"
+                + str(cpu_time)
+                + "\t"
                 + str(tree)
-                + "\n"
+                + "\n",
             )
 
     def format_file_path(self, method: str) -> str:
@@ -123,7 +146,7 @@ def run_methods(
             SCRIPT_PATH + SCRIPTS[method],
             *OPTIONS.get(method, DEFAULT_OPTIONS),
         ]
-        if method == "SCS":
+        if "SCS" in method:
             command.extend(["-s", str(rng.randrange(2**32))])
         command.append(source_tree_file)
 
@@ -136,20 +159,27 @@ def run_methods(
 
         try:
             tree = make_tree(result.stdout.decode("utf-8").strip())  # type: ignore
+            cpu_time = sum(map(float, result.stderr.decode("utf-8").strip().split("_")))
             if force_bifurcating:
                 tree = tree.bifurcating()
-        except:
+        except Exception as e:
+            print(e)
             tree = None
+            cpu_time = None
 
         results[method] = (tree, end_time - start_time)
 
         if logger is not None:
             logger.write_results(
-                method, model_tree_file, source_tree_file, end_time - start_time, tree  # type: ignore
+                method, model_tree_file, source_tree_file, end_time - start_time, cpu_time, tree  # type: ignore
             )
 
     with open(model_tree_file, "r") as f:
         model = make_tree(f.read().strip())
+        if "SMIDGenOutgrouped" in model_tree_file:
+            model = model.get_sub_tree(
+                set(model.get_tip_names()).difference(("OUTGROUP",))
+            )
         if force_bifurcating:
             model = model.bifurcating()
 
@@ -161,13 +191,15 @@ def run_methods(
             if verbosity >= 2:
                 print("Computing distances for", method)
             if tree is None:
-                print(f"{method}: time={time_result:.2f}s failed: {source_tree_file}) ")
+                print(f"{method}: wall={time_result:.2f}s failed: {source_tree_file}) ")
             elif calculate_distances or verbosity >= 2:
                 rf = rooted_rf_distance(model, tree)
                 mc = matching_cluster_distance(model, tree)
-                print(f"{method}: time={time_result:.2f}s RF={rf} MC={mc}")
+                print(
+                    f"{method}: wall={time_result:.2f}s cpu={cpu_time:.2f}s RF={rf} MC={mc}"
+                )
             else:
-                print(f"{method}: time={time_result:.2f}s")
+                print(f"{method}: wall={time_result:.2f}s cpu={cpu_time:.2f}s")
 
     return results
 
@@ -272,7 +304,7 @@ def run_experiment_smidgen_og(
     number_of_experiments = 30 if taxa != 10000 else 10
 
     for i in range(number_of_experiments):
-        source_file = f"data/SMIDGenOutgrouped/{taxa}/{density}/Source_Trees/RaxML/smo.{i}.sourceTreesOG.tre"
+        source_file = f"data/SMIDGenOutgrouped/{taxa}/{density}/Source_Trees/RaxML/smo.{i}.sourceTrees.tre"
         model_file = f"data/SMIDGenOutgrouped/{taxa}/{density}/Model_Trees/pruned/smo.{i}.modelTree.tre"
         if verbosity >= 1:
             print(f"Results for {i} ({source_file}):")

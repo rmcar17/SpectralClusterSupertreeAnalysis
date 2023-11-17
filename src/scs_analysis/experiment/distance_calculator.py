@@ -7,11 +7,11 @@ from ..distance.distance import (
     rooted_rf_distance,
 )
 
-from .experiment import BCD, MCS, RESULTS_FOLDER, SCS, SUP
+from .experiment import BCD, BCDG, BCDN, MCS, RESULTS_FOLDER, SCS, SCS_FAST, SUP
 from cogent3.core.tree import TreeNode
 from cogent3 import make_tree
 
-ORDERING = {BCD: 0, SCS: 1, SUP: 2, MCS: 3}
+ORDERING = {BCD: 0, BCDG: 0.5, BCDN: 0.75, SCS_FAST: 0.9, SCS: 1, SUP: 2, MCS: 3}
 
 
 class DistanceLogger:
@@ -30,10 +30,10 @@ class DistanceLogger:
         with open(file_path, "r") as f:
             for line in f:
                 all_data = line.strip("\n").split("\t")
-                mtf, stf, wall_time = all_data[:3]
+                mtf, stf, wall_time, cpu_time = all_data[:4]
                 # b for forced bifurcation
-                rf_distance, mc_distance, brf_distance, bmc_distance = all_data[3:7]
-                tree = all_data[7]
+                rf_distance, mc_distance, brf_distance, bmc_distance = all_data[4:8]
+                tree = all_data[8]
                 if stf == source_tree_file:
                     return True
         return False
@@ -44,6 +44,7 @@ class DistanceLogger:
         model_tree_file: Optional[str],
         source_tree_file: str,
         wall_time: Union[float, str],
+        cpu_time: Union[float, str],
         rf_distance: int,
         mc_distance: int,
         f1_distance: float,
@@ -56,6 +57,7 @@ class DistanceLogger:
             str(model_tree_file),
             source_tree_file,
             str(wall_time),
+            str(cpu_time),
             str(rf_distance),
             str(mc_distance),
             str(f1_distance),
@@ -77,10 +79,10 @@ def calculate_distances_for_experiment(
     logger = DistanceLogger(directory + "/")
 
     result_files = sorted(
-        result_files, key=lambda x: (ORDERING.get(x[:3], float("inf")), x)
+        result_files, key=lambda x: (ORDERING.get(x[:-12], float("inf")), x)
     )
 
-    methods = list(map(lambda x: x[:3], result_files))
+    methods = list(map(lambda x: x[:-12], result_files))
     result_file_paths = list(map(lambda x: directory + "/" + x, result_files))
 
     file_objects = [
@@ -93,7 +95,7 @@ def calculate_distances_for_experiment(
         for method, line in zip(methods, next_lines):
             if line == "":
                 continue
-            mtf, stf, wall_time, tree = line.strip("\n").split("\t")
+            mtf, stf, wall_time, cpu_time, tree = line.strip("\n").split("\t")
             if logger.result_already_exists(method, stf):
                 if verbosity >= 1:
                     print(
@@ -109,11 +111,15 @@ def calculate_distances_for_experiment(
                 already_gave_stf = True
 
             all_data = line.strip("\n").split("\t")
-            mtf, stf, wall_time, tree = all_data
+            mtf, stf, wall_time, cpu_time, tree = all_data
             tree = make_tree(tree)
 
             with open(mtf, "r") as f:
                 model_tree = make_tree(f.read().strip())
+                if "SMIDGenOutgrouped" in mtf:
+                    model_tree = model_tree.get_sub_tree(
+                        set(model_tree.get_tip_names()).difference(("OUTGROUP",))
+                    )
 
             rf = rooted_rf_distance(model_tree, tree)
             mc = matching_cluster_distance(model_tree, tree)
@@ -134,7 +140,7 @@ def calculate_distances_for_experiment(
                 else:
                     print(f"{method}: RF={rf} MC={mc} F1={f1}")
             logger.write_results(
-                method, mtf, stf, wall_time, rf, mc, f1, brf, bmc, bf1, tree
+                method, mtf, stf, wall_time, cpu_time, rf, mc, f1, brf, bmc, bf1, tree
             )
 
         next_lines = [file_object.readline() for file_object in file_objects]
@@ -145,7 +151,7 @@ def calculate_distances_for_experiment(
 
 def calculate_all_distances(verbosity: int = 1):
     for root, subdirs, files in os.walk(RESULTS_FOLDER):
-        result_files = list(filter(lambda x: x[3:] == "_results.tsv", files))
+        result_files = list(filter(lambda x: x.endswith("_results.tsv"), files))
         if len(result_files) > 0:
             calculate_distances_for_experiment(root, result_files, verbosity=verbosity)
 
@@ -154,6 +160,8 @@ def calculate_experiment_distances(experiment_folder_identifier, verbosity: int 
     for root, subdirs, files in os.walk(RESULTS_FOLDER):
         if experiment_folder_identifier not in root:
             continue
-        result_files = list(filter(lambda x: x[3:] == "_results.tsv", files))
+        if "10000" not in root:
+            continue
+        result_files = list(filter(lambda x: x.endswith("_results.tsv"), files))
         if len(result_files) > 0:
             calculate_distances_for_experiment(root, result_files, verbosity=verbosity)

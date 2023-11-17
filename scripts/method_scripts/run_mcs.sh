@@ -1,2 +1,4 @@
 #!/bin/sh
-time python ./methods/mcs/run_mcs.py "$1"
+time -p -f %U_%S bash -c '
+python ./methods/mcs/run_mcs.py "'"$1"'"
+'

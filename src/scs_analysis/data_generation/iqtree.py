@@ -9,39 +9,43 @@ from scs_analysis.data_generation.generate_model_trees import (
 import subprocess
 
 
-TMP_IQ_TREE_PATH = "tmp/iqtree/"
+TMP_IQ_TREE_PATH = "tmp/iqtree"
 TMP_IQ_TREE_ALN_FILE = "tmp.fasta"
 
 
-def clean_tmp_iqtree_directory() -> None:
-    if not os.path.exists(TMP_IQ_TREE_PATH):
+def clean_tmp_iqtree_directory(tmp_path: str) -> None:
+    if not os.path.exists(tmp_path):
         return
-    files = sorted(os.listdir(TMP_IQ_TREE_PATH))
+    files = sorted(os.listdir(tmp_path))
     for file in files:
-        os.remove(TMP_IQ_TREE_PATH + file)
+        os.remove(tmp_path + file)
+    os.rmdir(tmp_path)
 
 
-def generate_iq_tree_for(source_tree: PhyloNode, alignment: Alignment) -> PhyloNode:
+def generate_iq_tree_for(
+    tmp_path: str, source_tree: PhyloNode, alignment: Alignment
+) -> PhyloNode:
     sub_aln: Alignment = alignment.take_seqs(source_tree.get_tip_names())  # type: ignore
 
-    clean_tmp_iqtree_directory()
-    if not os.path.exists(TMP_IQ_TREE_PATH):
-        os.makedirs(TMP_IQ_TREE_PATH)
-    sub_aln.write("tmp/iqtree/tmp.fasta")
+    clean_tmp_iqtree_directory(tmp_path)
+    if not os.path.exists(tmp_path):
+        os.makedirs(tmp_path)
+    sub_aln.write(tmp_path + TMP_IQ_TREE_ALN_FILE)
 
     subprocess.run(
         [
             "iqtree2",
             "-s",
-            TMP_IQ_TREE_PATH + TMP_IQ_TREE_ALN_FILE,
+            tmp_path + TMP_IQ_TREE_ALN_FILE,
             "-m",
             "STRSYM",
             "--quiet",
         ]
     )
-    with open(TMP_IQ_TREE_PATH + TMP_IQ_TREE_ALN_FILE + ".treefile") as f:
+    with open(tmp_path + TMP_IQ_TREE_ALN_FILE + ".treefile") as f:
         iqtree = make_tree(f.read().strip())
         iqtree.length = None
+    clean_tmp_iqtree_directory(tmp_path)
     return iqtree
 
 
@@ -70,13 +74,13 @@ def generate_iq_trees(taxa: int, max_subproblem_size: int, verbosity=1):
             )
         )
     )
+
+    tmp_path = TMP_IQ_TREE_PATH + f"_{taxa}_{max_subproblem_size}/"
     for i, file_name in enumerate(tree_files):
         if verbosity >= 1:
             print(f"Generating IQTrees for source trees {i+1} of {len(tree_files)}")
 
         tree_identifier = file_name.split(".")[1]
-
-        alignment = load_aligned_seqs(aln_path + f"bd.{tree_identifier}.fasta")
 
         dcm_trees = []
         with open(dcm_path + file_name, "r") as f:
@@ -92,6 +96,7 @@ def generate_iq_trees(taxa: int, max_subproblem_size: int, verbosity=1):
                     )
                     start_index += 1
 
+        alignment = None
         for i, tree in enumerate(dcm_trees):
             if i < start_index:
                 if verbosity >= 1:
@@ -99,9 +104,13 @@ def generate_iq_trees(taxa: int, max_subproblem_size: int, verbosity=1):
                         f"IQTree already exists for source tree {i+1} of {len(dcm_trees)}"
                     )
                 continue
+            if alignment is None:
+                if verbosity >= 1:
+                    print("Loading alignment...")
+                alignment = load_aligned_seqs(aln_path + f"bd.{tree_identifier}.fasta")
             if verbosity >= 1:
                 print(f"Running IQTree on source tree {i+1} of {len(dcm_trees)}")
 
-            iq_tree = generate_iq_tree_for(tree, alignment)
+            iq_tree = generate_iq_tree_for(tmp_path, tree, alignment)
             with open(iq_path + f"bd.{tree_identifier}.source_trees", "a") as f:
                 f.write(str(iq_tree) + "\n")

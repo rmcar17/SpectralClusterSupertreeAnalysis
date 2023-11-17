@@ -9,12 +9,24 @@ from scs_analysis.experiment.distance_calculator import ORDERING
 
 def graph_experiment(image_folder: str, root: str, distance_files: List[str]):
     distance_files = sorted(
-        distance_files, key=lambda x: (ORDERING.get(x[:3], float("inf")), x)
+        distance_files, key=lambda x: (ORDERING.get(x[:-12], float("inf")), x)
     )
-    methods = [file.split("_")[0] for file in distance_files]
+    methods = [file[:-27] for file in distance_files]
     distance_file_paths = [root + "/" + file for file in distance_files]
 
-    header = ["model", "source", "time", "rf", "mc", "f1", "brf", "bmc", "bf1", "tree"]
+    header = [
+        "model",
+        "source",
+        "walltime",
+        "cputime",
+        "rf",
+        "mc",
+        "f1",
+        "brf",
+        "bmc",
+        "bf1",
+        "tree",
+    ]
     dfs = []
     for method, distance_file in zip(methods, distance_file_paths):
         df = pd.read_csv(distance_file, delimiter="\t", names=header)

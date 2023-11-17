@@ -26,13 +26,15 @@ if __name__ == "__main__":
     else:
         seed = None
 
+    contract_edges = "-c" in sys.argv
+
     pcg_weighting = "branch"
     if sys.argv[1].startswith("data/SuperTripletsBenchmark/"):
         pcg_weighting = "depth"
     supertree = spectral_cluster_supertree(
         input_trees,
         pcg_weighting=pcg_weighting,
-        contract_edges=False,
+        contract_edges=contract_edges,
         normalise_pcg_weights=False,
         depth_normalisation=False,
         random_state=np.random.RandomState(seed),
