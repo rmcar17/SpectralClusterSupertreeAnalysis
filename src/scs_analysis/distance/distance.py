@@ -11,45 +11,49 @@ from .day_distance import ClusterTable, make_psw, rename_trees
 
 
 def rooted_rf_distance(tree_1: TreeNode, tree_2: TreeNode) -> int:
-    tree_1_tips = set(tree_1.get_tip_names())
-    tree_2_tips = set(tree_2.get_tip_names())
+    clusters_1 = set(map(frozenset, get_clusters(tree_1)))
+    clusters_2 = set(map(frozenset, get_clusters(tree_2)))
+    return len(clusters_1.symmetric_difference(clusters_2))
 
-    assert tree_1_tips == tree_2_tips, (
-        str(tree_1_tips.difference(tree_2_tips))
-        + " "
-        + str(tree_2_tips.difference(tree_1_tips))
-    )
+    # tree_1_tips = set(tree_1.get_tip_names())
+    # tree_2_tips = set(tree_2.get_tip_names())
 
-    tree_1 = tree_1.deepcopy()
-    tree_2 = tree_2.deepcopy()
-    inverse = rename_trees([tree_1, tree_2])
+    # assert tree_1_tips == tree_2_tips, (
+    #     str(tree_1_tips.difference(tree_2_tips))
+    #     + " "
+    #     + str(tree_2_tips.difference(tree_1_tips))
+    # )
 
-    psws = list(map(make_psw, [tree_1, tree_2]))
+    # tree_1 = tree_1.deepcopy()
+    # tree_2 = tree_2.deepcopy()
+    # inverse = rename_trees([tree_1, tree_2])
 
-    cluster_tables = list(map(ClusterTable, psws))
+    # psws = list(map(make_psw, [tree_1, tree_2]))
 
-    num_clusters = list(map(lambda x: x.number_of_clusters(), cluster_tables))
-    intersection = 0
+    # cluster_tables = list(map(ClusterTable, psws))
 
-    cluster_table = cluster_tables[0]
-    psw = psws[1]
-    S = []
-    psw.treset()
-    v, w = psw.nvertex()
-    while v != -1:
-        if w == 0:
-            S.append((cluster_table.encode(v), cluster_table.encode(v), 1, 1))
-        else:
-            L, R, N, W = float("inf"), 0, 0, 1
-            while w != 0:
-                Ls, Rs, Ns, Ws = S.pop()
-                L, R, N, W = min(L, Ls), max(R, Rs), N + Ns, W + Ws
-                w = w - Ws
-            S.append((L, R, N, W))
-            if N == R - L + 1 and cluster_table.is_clust(L, R):
-                intersection += 1
-        v, w = psw.nvertex()
-    return sum(num_clusters) - 2 * intersection
+    # num_clusters = list(map(lambda x: x.number_of_clusters(), cluster_tables))
+    # intersection = 0
+
+    # cluster_table = cluster_tables[0]
+    # psw = psws[1]
+    # S = []
+    # psw.treset()
+    # v, w = psw.nvertex()
+    # while v != -1:
+    #     if w == 0:
+    #         S.append((cluster_table.encode(v), cluster_table.encode(v), 1, 1))
+    #     else:
+    #         L, R, N, W = float("inf"), 0, 0, 1
+    #         while w != 0:
+    #             Ls, Rs, Ns, Ws = S.pop()
+    #             L, R, N, W = min(L, Ls), max(R, Rs), N + Ns, W + Ws
+    #             w = w - Ws
+    #         S.append((L, R, N, W))
+    #         if N == R - L + 1 and cluster_table.is_clust(L, R):
+    #             intersection += 1
+    #     v, w = psw.nvertex()
+    # return sum(num_clusters) - 2 * intersection
 
 
 def get_clusters(tree: TreeNode) -> List[Set[Any]]:
@@ -74,13 +78,13 @@ def matching_cluster_distance(
     Returns:
         int: The matching cluster distance between the trees.
     """
-    tree_1_tips = set(tree_1.get_tip_names())
-    tree_2_tips = set(tree_2.get_tip_names())
-    assert tree_1_tips == tree_2_tips, (
-        str(tree_1_tips.difference(tree_2_tips))
-        + " "
-        + str(tree_2_tips.difference(tree_1_tips))
-    )
+    # tree_1_tips = set(tree_1.get_tip_names())
+    # tree_2_tips = set(tree_2.get_tip_names())
+    # assert tree_1_tips == tree_2_tips, (
+    #     str(tree_1_tips.difference(tree_2_tips))
+    #     + " "
+    #     + str(tree_2_tips.difference(tree_1_tips))
+    # )
 
     clusters_1 = get_clusters(tree_1)
     clusters_2 = get_clusters(tree_2)

@@ -6,6 +6,11 @@ from matplotlib import pyplot as plt
 
 from scs_analysis.experiment.distance_calculator import ORDERING
 
+from scs_analysis.experiment.experiment import SCS_FAST, BCDG, BCDN, MCS
+
+
+METHOD_MAP = {SCS_FAST: "SCS", BCDG: "BCD (GSCM)", BCDN: "BCD (No GSCM)", MCS: "MCS"}
+
 
 def graph_experiment(image_folder: str, root: str, distance_files: List[str]):
     distance_files = sorted(
@@ -29,9 +34,12 @@ def graph_experiment(image_folder: str, root: str, distance_files: List[str]):
     ]
     dfs = []
     for method, distance_file in zip(methods, distance_file_paths):
+        if method not in METHOD_MAP:
+            continue
+
         df = pd.read_csv(distance_file, delimiter="\t", names=header)
         df = df.drop(columns=["model", "source", "tree"])
-        df["method"] = method
+        df["method"] = METHOD_MAP[method]
         dfs.append(df)
     df = pd.concat(dfs, ignore_index=True)
 
@@ -42,7 +50,7 @@ def graph_experiment(image_folder: str, root: str, distance_files: List[str]):
 
     for col in set(header).difference(["model", "source", "tree"]):
         plt.figure()
-        sns.violinplot(df, x="method", y=col)
+        sns.boxplot(df, x="method", y=col)
         plt.title(root)
         plt.savefig(image_directory + f"{col}.png")
         plt.close()
@@ -53,5 +61,7 @@ def graph_results(image_folder: str, results_folder: str):
         distance_files = list(
             filter(lambda x: x.endswith("_with_distances.tsv"), files)
         )
+        print(root)
         if len(distance_files) > 0:
+            print("GRAPHING", root)
             graph_experiment(image_folder, root, distance_files)

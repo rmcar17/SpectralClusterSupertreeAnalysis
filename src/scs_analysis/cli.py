@@ -144,8 +144,8 @@ def run_experiment(
             dataset_params[1] = [dataset_params[1]]
     elif dataset_name == "smidgenog10000":
         experiment = run_experiment_smidgen_og
-        dataset_params[0]=[10000]
-        dataset_params[1] =[0]
+        dataset_params[0] = [10000]
+        dataset_params[1] = [0]
     elif dataset_name == "dcmexact":
         experiment = run_experiment_dcm_exact
         if dataset_params[0] == 0:
@@ -193,7 +193,7 @@ EXPERIMENT_FOLDER_IDENTIFIERS = {
 }
 
 
-@main.command(no_args_is_help=True)
+@main.command(no_args_is_help=False)
 @click.option(
     "-e",
     "--experiment",
