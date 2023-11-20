@@ -2,8 +2,8 @@
 
 # Results
 
-results/*
-!results/.gitkeep
+# results/*
+# !results/.gitkeep
 
 # Images
 
