@@ -14,8 +14,10 @@ from matplotlib.ticker import (
     StrMethodFormatter,
 )
 
-sns.set_context("paper")
 sns.set_theme()
+sns.set_context("paper")
+sns.set_style("whitegrid")
+
 
 from scs_analysis.experiment.distance_calculator import ORDERING
 
@@ -29,17 +31,17 @@ def format_title(header, root):
     if "dcm_source_trees" in root:
         try:
             taxa, max_subprob = map(int, root.split("/")[-3::2])
-            suffix = f" DCM Exact (n={taxa}, m={max_subprob})"
+            suffix = f" SCS DCM Exact (n={taxa}, m={max_subprob})"
         except:
             (taxa,) = map(int, root.split("/")[-2::2])
-            suffix = f" DCM Exact (n={taxa})"
+            suffix = f" SCS DCM Exact (n={taxa})"
     elif "iq_source_trees" in root:
         try:
             taxa, max_subprob = map(int, root.split("/")[-3::2])
-            suffix = f" IQ-DCM (n={taxa}, m={max_subprob})"
+            suffix = f" SCS DCM IQ-TREE (n={taxa}, m={max_subprob})"
         except:
             (taxa,) = map(int, root.split("/")[-2::2])
-            suffix = f" IQ-DCM (n={taxa})"
+            suffix = f" SCS DCM IQ-TREE (n={taxa})"
     elif "SuperTriplets" in root:
         try:
             d, k = map(lambda x: int(x[1:]), root.split("/")[-2:])
