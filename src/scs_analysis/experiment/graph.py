@@ -1,8 +1,21 @@
+import warnings
+
+warnings.filterwarnings("ignore")
 import os
 from typing import List
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
+from matplotlib.ticker import (
+    FuncFormatter,
+    LogLocator,
+    MultipleLocator,
+    ScalarFormatter,
+    StrMethodFormatter,
+)
+
+sns.set_context("paper")
+sns.set_theme()
 
 from scs_analysis.experiment.distance_calculator import ORDERING
 
@@ -50,6 +63,7 @@ def format_title(header, root):
 
 
 def graph_experiment(image_folder: str, root: str, distance_files: List[str]):
+    print(root)
     distance_files = sorted(
         distance_files, key=lambda x: (ORDERING.get(x[:-12], float("inf")), x)
     )
@@ -90,47 +104,99 @@ def graph_experiment(image_folder: str, root: str, distance_files: List[str]):
         plt.figure()
         if "Time" in col:
             scaled, unit = make_time_scale_reasonable(df, col)
-            sns.boxplot(scaled, x="Method", y=col)
+            min_log_y_tick = scaled[col].min()
+            g = sns.boxplot(scaled, x="Method", y=col)
             plt.ylabel(col + f" ({unit})")
         else:
-            sns.boxplot(df, x="Method", y=col)
+            min_log_y_tick = df[col].min()
+            g = sns.boxplot(df, x="Method", y=col)
         if "F1" not in col:
             plt.ylim(0, None)
         plt.title(format_title(col, root))
+        # sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
         plt.tight_layout()
-        plt.savefig(image_directory + f"{col}_all.png")
+        plt.savefig(image_directory + f"{col}_all.pdf")
+        try:
+            g.set_yscale("log")
+            plt.ylim(min_log_y_tick / 2, None)
+            plt.yticks()
+            g.yaxis.set_major_formatter(FuncFormatter(format_tick))
+            g.yaxis.set_minor_formatter(ScalarFormatter())
+            g.yaxis.set_minor_formatter(FuncFormatter(format_tick))
+            g.yaxis.set_major_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            g.yaxis.set_minor_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            # sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
+            plt.tight_layout()
+            plt.savefig(image_directory + f"{col}_all_log.pdf")
+        except:
+            pass
         plt.close()
 
         mcs_mask = df["Method"] == METHOD_MAP[MCS]
 
         mcs_data = df[mcs_mask]
-        plt.figure()
-        if "Time" in col:
-            scaled, unit = make_time_scale_reasonable(mcs_data, col)
-            sns.boxplot(scaled, x="Method", y=col)
-            plt.ylabel(col + f" ({unit})")
-        else:
-            sns.boxplot(mcs_data, x="Method", y=col)
-        if "F1" not in col:
-            plt.ylim(0, None)
-        plt.title(format_title(col, root))
-        plt.tight_layout()
-        plt.savefig(image_directory + f"{col}_mcs.png")
-        plt.close()
+        if len(mcs_data) > 0:
+            plt.figure()
+            if "Time" in col:
+                scaled, unit = make_time_scale_reasonable(mcs_data, col)
+                min_log_y_tick = scaled[col].min()
+                g = sns.boxplot(scaled, x="Method", y=col)
+                plt.ylabel(col + f" ({unit})")
+            else:
+                min_log_y_tick = df[col].min()
+                g = sns.boxplot(mcs_data, x="Method", y=col)
+            if "F1" not in col:
+                plt.ylim(0, None)
+            plt.title(format_title(col, root))
+            # sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
+            plt.tight_layout()
+            plt.savefig(image_directory + f"{col}_mcs.pdf")
+            try:
+                g.set_yscale("log")
+                plt.ylim(min_log_y_tick / 2, None)
+                plt.yticks()
+                g.yaxis.set_major_formatter(FuncFormatter(format_tick))
+                g.yaxis.set_minor_formatter(ScalarFormatter())
+                g.yaxis.set_minor_formatter(FuncFormatter(format_tick))
+                g.yaxis.set_major_locator(LogLocator(base=10, subs=(1, 2, 5)))
+                g.yaxis.set_minor_locator(LogLocator(base=10, subs=(1, 2, 5)))
+                # sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
+                plt.tight_layout()
+                plt.savefig(image_directory + f"{col}_mcs_log.pdf")
+            except:
+                pass
+            plt.close()
 
         no_mcs_data = df[~mcs_mask & (df["Method"] != METHOD_MAP[BCDN])]
         plt.figure()
         if "Time" in col:
             scaled, unit = make_time_scale_reasonable(no_mcs_data, col)
-            sns.boxplot(scaled, x="Method", y=col)
+            min_log_y_tick = scaled[col].min()
+            g = sns.boxplot(scaled, x="Method", y=col)
             plt.ylabel(col + f" ({unit})")
         else:
-            sns.boxplot(no_mcs_data, x="Method", y=col)
+            min_log_y_tick = df[col].min()
+            g = sns.boxplot(no_mcs_data, x="Method", y=col)
         if "F1" not in col:
             plt.ylim(0, None)
         plt.title(format_title(col, root))
+        # sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
         plt.tight_layout()
-        plt.savefig(image_directory + f"{col}_others.png")
+        plt.savefig(image_directory + f"{col}_others.pdf")
+        try:
+            g.set_yscale("log")
+            plt.ylim(min_log_y_tick / 2, None)
+            plt.yticks()
+            g.yaxis.set_major_formatter(FuncFormatter(format_tick))
+            g.yaxis.set_minor_formatter(ScalarFormatter())
+            g.yaxis.set_minor_formatter(FuncFormatter(format_tick))
+            g.yaxis.set_major_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            g.yaxis.set_minor_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            # sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
+            plt.tight_layout()
+            plt.savefig(image_directory + f"{col}_others_log.pdf")
+        except:
+            pass
         plt.close()
 
         scs_mask = df["Method"] == METHOD_MAP[SCS_FAST]
@@ -139,15 +205,32 @@ def graph_experiment(image_folder: str, root: str, distance_files: List[str]):
         plt.figure()
         if "Time" in col:
             scaled, unit = make_time_scale_reasonable(scs_data, col)
-            sns.boxplot(scaled, x="Method", y=col)
+            min_log_y_tick = scaled[col].min()
+            g = sns.boxplot(scaled, x="Method", y=col)
             plt.ylabel(col + f" ({unit})")
         else:
-            sns.boxplot(scs_data, x="Method", y=col)
+            min_log_y_tick = df[col].min()
+            g = sns.boxplot(scs_data, x="Method", y=col)
         if "F1" not in col:
             plt.ylim(0, None)
         plt.title(format_title(col, root))
+        # sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
         plt.tight_layout()
-        plt.savefig(image_directory + f"{col}_scs.png")
+        plt.savefig(image_directory + f"{col}_scs.pdf")
+        try:
+            g.set_yscale("log")
+            plt.ylim(min_log_y_tick / 2, None)
+            plt.yticks()
+            g.yaxis.set_major_formatter(FuncFormatter(format_tick))
+            g.yaxis.set_minor_formatter(ScalarFormatter())
+            g.yaxis.set_minor_formatter(FuncFormatter(format_tick))
+            g.yaxis.set_major_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            g.yaxis.set_minor_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            # sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
+            plt.tight_layout()
+            plt.savefig(image_directory + f"{col}_scs_log.pdf")
+        except:
+            pass
         plt.close()
 
 
@@ -160,22 +243,6 @@ def make_time_scale_reasonable(df, column):
         return df, "minutes"
     df[column] /= 60
     return df, "hours"
-
-
-def graph_results(image_folder: str, results_folder: str):
-    # graph_smidgenog_combined(image_folder)
-    # graph_supertriplets_combined(image_folder)
-    # graph_dcm_combined(image_folder)
-    graph_iq_combined(image_folder)
-
-    # for root, subdirs, files in os.walk(results_folder):
-    #     distance_files = list(
-    #         filter(lambda x: x.endswith("_with_distances.tsv"), files)
-    #     )
-    #     print(root)
-    #     if len(distance_files) > 0:
-    #         print("GRAPHING", root)
-    #         graph_experiment(image_folder, root, distance_files)
 
 
 def load_data(folder):
@@ -309,30 +376,156 @@ def graph_combined(image_directory, df, root, x_col):
         plt.figure()
         if "Time" in col:
             scaled, unit = make_time_scale_reasonable(df, col)
-            sns.boxplot(scaled, x=x_col, hue="Method", y=col)
+            min_log_y_tick = scaled[col].min()
+            g = sns.boxplot(scaled, x=x_col, hue="Method", y=col)
             plt.ylabel(col + f" ({unit})")
         else:
-            sns.boxplot(df, x=x_col, hue="Method", y=col)
+            min_log_y_tick = df[col].min()
+            g = sns.boxplot(df, x=x_col, hue="Method", y=col)
         if "F1" not in col:
             plt.ylim(0, None)
         plt.title(format_title(col, root))
+        sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
         plt.tight_layout()
-        plt.savefig(image_directory + f"{col}_all.png")
+        plt.savefig(image_directory + f"{col}_all.pdf")
+        try:
+            g.set_yscale("log")
+            plt.ylim(min_log_y_tick / 2, None)
+            plt.yticks()
+            g.yaxis.set_major_formatter(FuncFormatter(format_tick))
+            g.yaxis.set_minor_formatter(ScalarFormatter())
+            g.yaxis.set_minor_formatter(FuncFormatter(format_tick))
+            g.yaxis.set_major_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            g.yaxis.set_minor_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
+            plt.tight_layout()
+            plt.savefig(image_directory + f"{col}_all_log.pdf")
+        except:
+            pass
         plt.close()
 
         mcs_mask = df["Method"] == METHOD_MAP[MCS]
 
         mcs_data = df[mcs_mask]
+        if len(mcs_data) > 0:
+            plt.figure()
+            if "Time" in col:
+                scaled, unit = make_time_scale_reasonable(mcs_data, col)
+                min_log_y_tick = scaled[col].min()
+                g = sns.boxplot(scaled, x=x_col, hue="Method", y=col)
+                plt.ylabel(col + f" ({unit})")
+            else:
+                min_log_y_tick = mcs_data[col].min()
+                g = sns.boxplot(mcs_data, x=x_col, hue="Method", y=col)
+            if "F1" not in col:
+                plt.ylim(0, None)
+            plt.title(format_title(col, root))
+            sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
+            plt.tight_layout()
+            plt.savefig(image_directory + f"{col}_mcs.pdf")
+            try:
+                g.set_yscale("log")
+                plt.ylim(min_log_y_tick / 2, None)
+                plt.yticks()
+                g.yaxis.set_major_formatter(FuncFormatter(format_tick))
+                g.yaxis.set_minor_formatter(ScalarFormatter())
+                g.yaxis.set_minor_formatter(FuncFormatter(format_tick))
+                g.yaxis.set_major_locator(LogLocator(base=10, subs=(1, 2, 5)))
+                g.yaxis.set_minor_locator(LogLocator(base=10, subs=(1, 2, 5)))
+                sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
+                plt.tight_layout()
+                plt.savefig(image_directory + f"{col}_mcs_log.pdf")
+            except:
+                pass
+            plt.close()
+
+        no_mcs_data = df[~mcs_mask & (df["Method"] != METHOD_MAP[BCDN])]
         plt.figure()
         if "Time" in col:
-            scaled, unit = make_time_scale_reasonable(mcs_data, col)
-            sns.boxplot(scaled, x=x_col, hue="Method", y=col)
+            scaled, unit = make_time_scale_reasonable(no_mcs_data, col)
+            min_log_y_tick = scaled[col].min()
+            g = sns.boxplot(scaled, x=x_col, hue="Method", y=col)
             plt.ylabel(col + f" ({unit})")
         else:
-            sns.boxplot(mcs_data, x=x_col, hue="Method", y=col)
+            min_log_y_tick = no_mcs_data[col].min()
+            g = sns.boxplot(no_mcs_data, x=x_col, hue="Method", y=col)
         if "F1" not in col:
             plt.ylim(0, None)
         plt.title(format_title(col, root))
+        sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
         plt.tight_layout()
-        plt.savefig(image_directory + f"{col}_mcs.png")
+        plt.savefig(image_directory + f"{col}_others.pdf")
+        try:
+            g.set_yscale("log")
+            plt.ylim(min_log_y_tick / 2, None)
+            plt.yticks()
+            g.yaxis.set_major_formatter(FuncFormatter(format_tick))
+            g.yaxis.set_minor_formatter(ScalarFormatter())
+            g.yaxis.set_minor_formatter(FuncFormatter(format_tick))
+            g.yaxis.set_major_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            g.yaxis.set_minor_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
+            plt.tight_layout()
+            plt.savefig(image_directory + f"{col}_others_log.pdf")
+        except:
+            pass
         plt.close()
+
+        scs_mask = df["Method"] == METHOD_MAP[SCS_FAST]
+
+        scs_data = df[scs_mask]
+        plt.figure()
+        if "Time" in col:
+            scaled, unit = make_time_scale_reasonable(scs_data, col)
+            min_log_y_tick = scaled[col].min()
+            g = sns.boxplot(scaled, x=x_col, hue="Method", y=col)
+            plt.ylabel(col + f" ({unit})")
+        else:
+            min_log_y_tick = df[col].min()
+            g = sns.boxplot(scs_data, x=x_col, hue="Method", y=col)
+        if "F1" not in col:
+            plt.ylim(0, None)
+        plt.title(format_title(col, root))
+        sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
+        plt.tight_layout()
+        plt.savefig(image_directory + f"{col}_scs.pdf")
+        try:
+            g.set_yscale("log")
+            plt.ylim(min_log_y_tick / 2, None)
+            plt.yticks()
+            g.yaxis.set_major_formatter(FuncFormatter(format_tick))
+            g.yaxis.set_minor_formatter(ScalarFormatter())
+            g.yaxis.set_minor_formatter(FuncFormatter(format_tick))
+            g.yaxis.set_major_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            g.yaxis.set_minor_locator(LogLocator(base=10, subs=(1, 2, 5)))
+            sns.move_legend(g, "upper left", bbox_to_anchor=(1, 1))
+            plt.tight_layout()
+            plt.savefig(image_directory + f"{col}_scs_log.pdf")
+        except:
+            pass
+        plt.close()
+
+
+def format_tick(value, pos):
+    if float.is_integer(value):
+        return str(int(value))
+    return f"{value:.2f}"
+
+
+def graph_results(image_folder: str, results_folder: str):
+    print("GRAPHING", "SMIDGenOG")
+    graph_smidgenog_combined(image_folder)
+    print("GRAPHING", "SuperTriplets")
+    graph_supertriplets_combined(image_folder)
+    print("GRAPHING", "DCM")
+    graph_dcm_combined(image_folder)
+    print("GRAPHING", "IQ")
+    graph_iq_combined(image_folder)
+
+    for root, subdirs, files in os.walk(results_folder):
+        distance_files = list(
+            filter(lambda x: x.endswith("_with_distances.tsv"), files)
+        )
+        if len(distance_files) > 0:
+            print("GRAPHING", root)
+            graph_experiment(image_folder, root, distance_files)
