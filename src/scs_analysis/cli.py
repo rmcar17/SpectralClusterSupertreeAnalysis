@@ -29,6 +29,8 @@ from scs_analysis.experiment.distance_calculator import (
     calculate_experiment_distances,
 )
 from scs_analysis.experiment.graph import graph_results
+from scs_analysis.experiment.stats import stats_from_results
+
 import time
 
 __author__ = "Robert McArthur"
@@ -222,6 +224,14 @@ def plot():
     Draws graphs for all experiments distances have been calculated for.
     """
     graph_results("images/", "results/")
+
+
+@main.command(no_args_is_help=False)
+def stats():
+    """
+    Get stats from results.
+    """
+    stats_from_results()
 
 
 @main.command(no_args_is_help=True)
