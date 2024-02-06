@@ -233,7 +233,7 @@ def graph_combined(image_directory, df, x_col, suptitle, methods):
         ax=ax[1, 1],
     )
     time_graph.set_yscale("log")
-    time_graph.set_title("CPU Time (Lower is Better)")
+    time_graph.set_title("CPU Time Log Scale (Lower is Better)")
 
     min_time = df["CPU Time"].min()
     max_time = df["CPU Time"].max()
@@ -263,7 +263,7 @@ def graph_combined(image_directory, df, x_col, suptitle, methods):
 
     fig.savefig(
         image_directory
-        + f"_{include_code(methods)}_{suptitle.lower().replace(' ','_').replace('(','').replace(')','')}.pdf",
+        + f"{include_code(methods)}_{suptitle.lower().replace(' ','_').replace('(','').replace(')','').replace('%','').replace('=','_')}.pdf",
         bbox_inches="tight",
     )
     plt.close(fig)
