@@ -31,6 +31,8 @@ data/SuperTripletsBenchmark/*
 
 methods/bcd/data/*
 
+backup/*
+
 # tmp files
 
 tmp.nwk

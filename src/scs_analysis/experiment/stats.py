@@ -3,7 +3,7 @@ from .graph import load_data
 ALLOWED = ("BCD (GSCM)", "SCS")
 
 
-def iq_stats(taxa, m):
+def iq_stats(col, taxa, m):
     print("\t\t" + str(taxa).ljust(5), "&", str(m).ljust(3), "& ", end="")
 
     file = f"results/birth_death/{taxa}/iq_source_trees/{m}/"
@@ -18,8 +18,8 @@ def iq_stats(taxa, m):
         assert method == ALLOWED[index]
         index += 1
 
-        values.append(sub_df["CPU Time"].median())
-        # print(method.ljust(10), round(sub_df["CPU Time"].median(), 2))
+        values.append(sub_df[col].median())
+        # print(method.ljust(10), round(sub_df[col].median(), 2))
     for i, value in enumerate(values):
         if values[i] < values[1 - i]:
             print(f"\\textbf{{{round(value, 2)}}}", "& ", end="")
@@ -28,7 +28,7 @@ def iq_stats(taxa, m):
     print(str(round(values[0] / values[1], 2)) + "$\\times$ \\\\")
 
 
-def smidgenog_stats(taxa, density):
+def smidgenog_stats(col, taxa, density):
     print(
         "\t\t" + str(taxa).ljust(5),
         "&",
@@ -49,8 +49,8 @@ def smidgenog_stats(taxa, density):
         assert method == ALLOWED[index]
         index += 1
 
-        values.append(sub_df["CPU Time"].median())
-        # print(method.ljust(10), round(sub_df["CPU Time"].median(), 2))
+        values.append(sub_df[col].median())
+        # print(method.ljust(10), round(sub_df[col].median(), 2))
     for i, value in enumerate(values):
         if values[i] < values[1 - i]:
             print(f"\\textbf{{{round(value, 2)}}}", "& ", end="")
@@ -59,7 +59,7 @@ def smidgenog_stats(taxa, density):
     print(str(round(values[0] / values[1], 2)) + "$\\times$ \\\\")
 
 
-def supertriplets_stats(d, k):
+def supertriplets_stats(col, d, k):
     print(
         "\t\t" + str(d).ljust(2),
         "&",
@@ -80,8 +80,8 @@ def supertriplets_stats(d, k):
         assert method == ALLOWED[index]
         index += 1
 
-        values.append(sub_df["CPU Time"].median())
-        # print(method.ljust(10), round(sub_df["CPU Time"].median(), 2))
+        values.append(sub_df[col].median())
+        # print(method.ljust(10), round(sub_df[col].median(), 2))
     for i, value in enumerate(values):
         if values[i] < values[1 - i]:
             print(f"\\textbf{{{round(value, 2)}}}", "& ", end="")
@@ -98,10 +98,12 @@ def table_prelude():
     )
 
 
-def table_prologue(label):
+def table_prologue(caption, label):
     print(
         """\t\\end{tabular}
-\t\\caption{Median CPU Time}
+\t\\caption{Median """
+        + caption
+        + """}
 \t\\label{tab:"""
         + label
         + """}
@@ -118,48 +120,53 @@ LABELS = {
 
 
 def table(func):
-    def table_wrapper():
+    def table_wrapper(*args, **kwargs):
         table_prelude()
-        func()
-        table_prologue(LABELS[func.__name__.split("_")[0]])
+        func(*args, **kwargs)
+        table_prologue(args[0], LABELS[func.__name__.split("_")[0]])
 
     return table_wrapper
 
 
 @table
-def iq_stats_from_results():
+def iq_stats_from_results(col):
     print(
-        """\t\tTaxa  & $m$ & BCD (GSCM) (seconds) & SCS (seconds) & Speedup \\\\
+        """\t\tTaxa  & $m$ & BCD (GSCM) (seconds) & SCS (seconds) & Improvement \\\\
 \t\t\\hline"""
     )
     for taxa in (500, 1000, 2000, 5000, 10000):
         for m in (50, 100):
-            iq_stats(taxa, m)
+            iq_stats(col, taxa, m)
 
 
 @table
-def smidgenog_from_results():
+def smidgenog_from_results(col):
     print(
-        """\t\tTaxa  & Density & BCD (GSCM) (seconds) & SCS (seconds) & Speedup \\\\
+        """\t\tTaxa  & Density & BCD (GSCM) (seconds) & SCS (seconds) & Improvement \\\\
 \t\t\\hline"""
     )
     for taxa in (100, 500, 1000, 10000):
         for density in (20, 50, 75, 100) if taxa != 10000 else (0,):
-            smidgenog_stats(taxa, density)
+            smidgenog_stats(col, taxa, density)
 
 
 @table
-def supertriplets_from_results():
+def supertriplets_from_results(col):
     print(
-        """\t\t$d$ & $k$ & BCD (GSCM) (seconds) & SCS (seconds) & Speedup \\\\
+        """\t\t$d$ & $k$ & BCD (GSCM) (seconds) & SCS (seconds) & Improvement \\\\
 \t\t\\hline"""
     )
     for taxa in (25, 50, 75):
         for density in (10, 20, 30, 40, 50):
-            supertriplets_stats(taxa, density)
+            supertriplets_stats(col, taxa, density)
 
 
 def stats_from_results():
-    iq_stats_from_results()
-    smidgenog_from_results()
-    supertriplets_from_results()
+    iq_stats_from_results("CPU Time")
+    iq_stats_from_results("Matching Cluster Distance")
+
+    smidgenog_from_results("CPU Time")
+    smidgenog_from_results("Matching Cluster Distance")
+
+    supertriplets_from_results("CPU Time")
+    supertriplets_from_results("Matching Cluster Distance")
