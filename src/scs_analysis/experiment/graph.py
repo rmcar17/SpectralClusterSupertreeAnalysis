@@ -266,6 +266,7 @@ def graph_combined(image_directory, df, x_col, suptitle, methods):
         + f"_{include_code(methods)}_{suptitle.lower().replace(' ','_').replace('(','').replace(')','')}.pdf",
         bbox_inches="tight",
     )
+    plt.close(fig)
 
 
 def log_time_ticks(min_value, max_value, padding=0):
