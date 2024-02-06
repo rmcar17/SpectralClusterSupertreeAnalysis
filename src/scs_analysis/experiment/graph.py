@@ -95,15 +95,15 @@ def graph_supertriplets_combined(image_folder: str, methods):
         dfs = []
         for k in ks:
             df = load_data(f"results/SuperTripletsBenchmark/d{d}/k{k}")
-            df["k"] = k
+            df["Source Trees (k)"] = k
             dfs.append(df)
         df = pd.concat(dfs, ignore_index=True)
 
         graph_combined(
             image_folder + f"combined/SuperTripletsBenchmark/d{d}/",
             df,
-            "k",
-            f"Supertriplets Dataset ({d=}%)",
+            "Source Trees (k)",
+            f"Supertriplets Dataset (Deletion Rate={d}%)",
             methods,
         )
 
