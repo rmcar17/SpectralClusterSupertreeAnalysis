@@ -28,7 +28,7 @@ from scs_analysis.experiment.distance_calculator import (
     calculate_all_distances,
     calculate_experiment_distances,
 )
-from scs_analysis.experiment.new_graph import graph_results
+from scs_analysis.experiment.graph import graph_results
 from scs_analysis.experiment.stats import stats_from_results
 
 import time
