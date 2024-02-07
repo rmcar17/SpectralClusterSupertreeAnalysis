@@ -103,7 +103,7 @@ def graph_supertriplets_combined(image_folder: str, methods):
             image_folder + f"combined/SuperTripletsBenchmark/d{d}/",
             df,
             "Source Trees (k)",
-            f"Supertriplets Dataset (Deletion Rate={d}%)",
+            f"SuperTriplets Dataset (Deletion Rate={d}%)",
             methods,
         )
 
