@@ -207,7 +207,8 @@ def graph_combined(image_directory, df, x_col, suptitle, methods):
         ax=ax[0, 1],
     )
     f1_graph.set_ylim(None, 1)
-    f1_graph.set_title("F1 Score (Higher is Better)")
+    f1_graph.set_title(r"$\mathrm{F_1}$ Score (Higher is Better)")
+    f1_graph.set_ylabel(r"$\mathrm{F_1}$ Score")
 
     # Matching Cluster Distance
     mc_graph = sns.boxplot(
