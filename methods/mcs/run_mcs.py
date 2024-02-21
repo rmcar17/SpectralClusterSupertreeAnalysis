@@ -31,8 +31,6 @@ if __name__ == "__main__":
     supertree = min_cut_supertree(
         input_trees,
         pcg_weighting=pcg_weighting,
-        contract_edges=False,
-        normalise_pcg_weights=False,
-        depth_normalisation=False,
+        contract_edges=True,
     )
     print(supertree)

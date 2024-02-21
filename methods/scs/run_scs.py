@@ -35,8 +35,6 @@ if __name__ == "__main__":
         input_trees,
         pcg_weighting=pcg_weighting,
         contract_edges=contract_edges,
-        normalise_pcg_weights=False,
-        depth_normalisation=False,
         random_state=np.random.RandomState(seed),
     )
     print(supertree)

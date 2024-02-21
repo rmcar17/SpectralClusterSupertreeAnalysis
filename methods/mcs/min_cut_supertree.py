@@ -24,7 +24,7 @@ https://www.sciencedirect.com/science/article/pii/S0167739X16300814 (it also tal
 Finally found superfine https://github.com/dtneves/SuperFine
 """
 
-from typing import Dict, Optional, Sequence, Set, Tuple
+from typing import Dict, Literal, Optional, Sequence, Set, Tuple
 
 from cogent3.core.tree import TreeNode
 
@@ -43,9 +43,7 @@ from spectral_cluster_supertree.scs.scs import (
 
 def min_cut_supertree(
     trees: Sequence[TreeNode],
-    pcg_weighting: str = "one",
-    normalise_pcg_weights: bool = False,
-    depth_normalisation: bool = False,
+    pcg_weighting: Literal["one", "branch", "depth"] = "one",
     contract_edges: bool = True,
     weights: Optional[Sequence[float]] = None,
 ) -> TreeNode:
@@ -102,8 +100,6 @@ def min_cut_supertree(
         trees,
         weights,
         pcg_weighting,
-        normalise_pcg_weights,
-        depth_normalisation,
     )
 
     components = _get_graph_components(pcg_vertices, pcg_edges)
@@ -116,7 +112,7 @@ def min_cut_supertree(
                 pcg_edges,
                 pcg_weights,
                 taxa_ocurrences,
-                taxa_co_occurrences
+                taxa_co_occurrences,
             )
         components = min_cut_partition(pcg_vertices, pcg_weights)
 
@@ -144,8 +140,6 @@ def min_cut_supertree(
             min_cut_supertree(
                 new_induced_trees,
                 pcg_weighting,
-                normalise_pcg_weights,
-                depth_normalisation,
                 contract_edges,
                 new_weights,
             )
