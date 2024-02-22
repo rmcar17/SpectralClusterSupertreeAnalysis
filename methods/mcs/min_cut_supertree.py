@@ -43,9 +43,9 @@ from spectral_cluster_supertree.scs import (
 
 def min_cut_supertree(
     trees: Sequence[TreeNode],
+    weights: Optional[Sequence[float]] = None,
     pcg_weighting: Literal["one", "branch", "depth"] = "one",
     contract_edges: bool = True,
-    weights: Optional[Sequence[float]] = None,
 ) -> TreeNode:
     """
     Min-Cut Supertree (MCS).
@@ -139,9 +139,9 @@ def min_cut_supertree(
         child_trees.append(
             min_cut_supertree(
                 new_induced_trees,
+                new_weights,
                 pcg_weighting,
                 contract_edges,
-                new_weights,
             )
         )
 
