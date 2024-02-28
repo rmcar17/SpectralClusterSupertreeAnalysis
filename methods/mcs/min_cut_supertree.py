@@ -28,7 +28,7 @@ from typing import Dict, Literal, Optional, Sequence, Set, Tuple
 
 from cogent3.core.tree import TreeNode
 
-from spectral_cluster_supertree.scs import (
+sc_supertree.scs import (
     _component_to_names_set,
     _connect_trees,
     _contract_proper_cluster_graph,

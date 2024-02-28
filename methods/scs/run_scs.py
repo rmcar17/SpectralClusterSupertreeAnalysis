@@ -4,7 +4,7 @@ from cogent3 import make_tree
 from cogent3.core.tree import TreeNode, PhyloNode
 import numpy as np
 
-from spectral_cluster_supertree import spectral_cluster_supertree
+sc_supertree import construct_supertree
 
 
 def parse_trees(file_path: str) -> List[PhyloNode]:
@@ -31,7 +31,7 @@ if __name__ == "__main__":
     pcg_weighting = "branch"
     if sys.argv[1].startswith("data/SuperTripletsBenchmark/"):
         pcg_weighting = "depth"
-    supertree = spectral_cluster_supertree(
+    supertree = construct_supertree(
         input_trees,
         pcg_weighting=pcg_weighting,
         contract_edges=contract_edges,
