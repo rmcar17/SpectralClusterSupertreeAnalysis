@@ -11,56 +11,9 @@ from .day_distance import ClusterTable, make_psw, rename_trees
 
 
 def rooted_rf_distance(tree_1: TreeNode, tree_2: TreeNode) -> int:
-    clusters_1 = set(map(frozenset, get_clusters(tree_1)))
-    clusters_2 = set(map(frozenset, get_clusters(tree_2)))
+    clusters_1 = tree_1.subsets()
+    clusters_2 = tree_2.subsets()
     return len(clusters_1.symmetric_difference(clusters_2))
-
-    # tree_1_tips = set(tree_1.get_tip_names())
-    # tree_2_tips = set(tree_2.get_tip_names())
-
-    # assert tree_1_tips == tree_2_tips, (
-    #     str(tree_1_tips.difference(tree_2_tips))
-    #     + " "
-    #     + str(tree_2_tips.difference(tree_1_tips))
-    # )
-
-    # tree_1 = tree_1.deepcopy()
-    # tree_2 = tree_2.deepcopy()
-    # inverse = rename_trees([tree_1, tree_2])
-
-    # psws = list(map(make_psw, [tree_1, tree_2]))
-
-    # cluster_tables = list(map(ClusterTable, psws))
-
-    # num_clusters = list(map(lambda x: x.number_of_clusters(), cluster_tables))
-    # intersection = 0
-
-    # cluster_table = cluster_tables[0]
-    # psw = psws[1]
-    # S = []
-    # psw.treset()
-    # v, w = psw.nvertex()
-    # while v != -1:
-    #     if w == 0:
-    #         S.append((cluster_table.encode(v), cluster_table.encode(v), 1, 1))
-    #     else:
-    #         L, R, N, W = float("inf"), 0, 0, 1
-    #         while w != 0:
-    #             Ls, Rs, Ns, Ws = S.pop()
-    #             L, R, N, W = min(L, Ls), max(R, Rs), N + Ns, W + Ws
-    #             w = w - Ws
-    #         S.append((L, R, N, W))
-    #         if N == R - L + 1 and cluster_table.is_clust(L, R):
-    #             intersection += 1
-    #     v, w = psw.nvertex()
-    # return sum(num_clusters) - 2 * intersection
-
-
-def get_clusters(tree: TreeNode) -> List[Set[Any]]:
-    clusters = []
-    for node in tree.postorder(include_self=True):
-        clusters.append(set(node.get_tip_names()))
-    return clusters
 
 
 def matching_cluster_distance(
@@ -78,27 +31,13 @@ def matching_cluster_distance(
     Returns:
         int: The matching cluster distance between the trees.
     """
-    # tree_1_tips = set(tree_1.get_tip_names())
-    # tree_2_tips = set(tree_2.get_tip_names())
-    # assert tree_1_tips == tree_2_tips, (
-    #     str(tree_1_tips.difference(tree_2_tips))
-    #     + " "
-    #     + str(tree_2_tips.difference(tree_1_tips))
-    # )
 
-    clusters_1 = get_clusters(tree_1)
-    clusters_2 = get_clusters(tree_2)
+    clusters_1 = tree_1.subsets()
+    clusters_2 = tree_2.subsets()
     if remove_identical:
-        intersection = set(map(frozenset, clusters_1)).intersection(
-            map(frozenset, clusters_2)
-        )
-        clusters_1 = list(
-            map(set, set(map(frozenset, clusters_1)).difference(intersection))
-        )
-        clusters_2 = list(
-            map(set, set(map(frozenset, clusters_2)).difference(intersection))
-        )
-
+        intersection = clusters_1.intersection(clusters_2)
+        clusters_1 = list(clusters_1.difference(intersection))
+        clusters_2 = list(clusters_2.difference(intersection))
     while len(clusters_1) < len(clusters_2):
         clusters_1.append(set())
     while len(clusters_2) < len(clusters_1):
@@ -130,8 +69,8 @@ def rooted_f1_distance(tree_1: TreeNode, tree_2: TreeNode) -> float:
     Returns:
         float: The f1 score between the clusters of the two trees.
     """
-    tree_1_clusters = set(map(frozenset, get_clusters(tree_1)))
-    tree_2_clusters = set(map(frozenset, get_clusters(tree_2)))
+    tree_1_clusters = tree_1.subsets()
+    tree_2_clusters = tree_2.subsets()
 
     # Note that the distance definition is symmetric so
     # which one is the model tree strictly doesn't matter
