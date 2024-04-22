@@ -4,7 +4,7 @@ from cogent3 import make_tree
 from cogent3.core.tree import TreeNode, PhyloNode
 import numpy as np
 
-sc_supertree import construct_supertree
+from sc_supertree import construct_supertree
 
 
 def parse_trees(file_path: str) -> List[PhyloNode]:

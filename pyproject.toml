@@ -32,7 +32,7 @@ exclude = ["doc/*.html"]
 include = ["doc/", "requirements.txt", "src/*", "pyproject.toml"]
 
 [project.scripts]
-scs = "scs_analysis.cli:main"
+scsa = "scs_analysis.cli:main"
 
 [project.optional-dependencies]
 dev = [
