@@ -2,6 +2,7 @@ import os
 
 import pandas as pd
 import seaborn as sns
+import numpy as np
 
 from matplotlib import pyplot as plt
 from matplotlib.ticker import (
@@ -166,14 +167,53 @@ def include_code(methods):
 
 
 def graph_combined(image_directory, df, x_col, suptitle, methods):
+    # print()
+    # print(image_directory)
+    all_results = []
+    if x_col is not None:
+        for data_point, x_df in df.groupby(x_col):
+            scs_df = x_df[x_df["Method"] == "SCS"]
+            bcd_df = x_df[x_df["Method"] == "BCD (GSCM)"]
+            if len(bcd_df) == 0:
+                continue
+            # print(scs_df)
+            results = {}
+            for metric in ("CPU Time", "RF Distance", "Matching Cluster Distance"):
+                # print(scs_df[metric].to_numpy() / bcd_df[metric].to_numpy())
+                results["SCS/BCD: " + metric] = np.median(
+                    scs_df[metric].to_numpy() / bcd_df[metric].to_numpy()
+                )
+                results["BCD/SCS: " + metric] = np.median(
+                    bcd_df[metric].to_numpy() / scs_df[metric].to_numpy()
+                )
+            # print(results)
+            all_results.append((data_point, results))
+    else:
+        scs_df = df[df["Method"] == "SCS"]
+        bcd_df = df[df["Method"] == "BCD (GSCM)"]
+        if len(bcd_df) > 0:
+            # print(scs_df)
+            results = {}
+            for metric in ("CPU Time", "RF Distance", "Matching Cluster Distance"):
+                # print(scs_df[metric].to_numpy() / bcd_df[metric].to_numpy())
+                results["SCS/BCD " + metric] = np.median(
+                    scs_df[metric].to_numpy() / bcd_df[metric].to_numpy()
+                )
+                results["BCD/SCS " + metric] = np.median(
+                    bcd_df[metric].to_numpy() / scs_df[metric].to_numpy()
+                )
+            # print(results)
+
+            all_results.append((None, results))
+
     if not os.path.exists(image_directory):
         os.makedirs(image_directory)
 
     df = df[df["Method"].isin(methods)]
 
-    fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(11, 7))
+    fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(8, 8 / 2))
 
-    fig.suptitle(suptitle)
+    # fig.suptitle(suptitle)
 
     hue_order = generate_hue_order(df["Method"].unique())
     palette = {
@@ -191,24 +231,23 @@ def graph_combined(image_directory, df, x_col, suptitle, methods):
         hue="Method",
         hue_order=hue_order,
         palette=palette,  # type: ignore
-        ax=ax[0, 0],
+        ax=ax[0],
     )
     rf_graph.set_ylim(0, None)
-    rf_graph.set_title("Robinson Foulds Distance (Lower is Better)")
-
-    # F1 Score
-    f1_graph = sns.boxplot(
-        df,
-        x=x_col,
-        y="F1 Score",
-        hue="Method",
-        hue_order=hue_order,
-        palette=palette,  # type: ignore
-        ax=ax[0, 1],
-    )
-    f1_graph.set_ylim(None, 1)
-    f1_graph.set_title(r"$\mathrm{F_1}$ Score (Higher is Better)")
-    f1_graph.set_ylabel(r"$\mathrm{F_1}$ Score")
+    rf_graph.set_title("Robinson-Foulds Distance")
+    # # F1 Score
+    # f1_graph = sns.boxplot(
+    #     df,
+    #     x=x_col,
+    #     y="F1 Score",
+    #     hue="Method",
+    #     hue_order=hue_order,
+    #     palette=palette,  # type: ignore
+    #     ax=ax[0, 1],
+    # )
+    # f1_graph.set_ylim(None, 1)
+    # f1_graph.set_title(r"$\mathrm{F_1}$ Score (Higher is Better)")
+    # f1_graph.set_ylabel(r"$\mathrm{F_1}$ Score")
 
     # Matching Cluster Distance
     mc_graph = sns.boxplot(
@@ -218,10 +257,11 @@ def graph_combined(image_directory, df, x_col, suptitle, methods):
         hue="Method",
         hue_order=hue_order,
         palette=palette,  # type: ignore
-        ax=ax[1, 0],
+        ax=ax[1],
     )
     mc_graph.set_ylim(0, None)
-    mc_graph.set_title("Matching Cluster Distance (Lower is Better)")
+    mc_graph.ticklabel_format(style="plain", axis="y")
+    mc_graph.set_title("Matching Cluster Distance")
 
     # CPU Time
     time_graph = sns.boxplot(
@@ -231,10 +271,10 @@ def graph_combined(image_directory, df, x_col, suptitle, methods):
         hue="Method",
         hue_order=hue_order,
         palette=palette,  # type: ignore
-        ax=ax[1, 1],
+        ax=ax[2],
     )
     time_graph.set_yscale("log")
-    time_graph.set_title("CPU Time Log Scale (Lower is Better)")
+    time_graph.set_title("CPU Time (Log Scale)")
 
     min_time = df["CPU Time"].min()
     max_time = df["CPU Time"].max()
@@ -249,9 +289,9 @@ def graph_combined(image_directory, df, x_col, suptitle, methods):
     # Legend
     handles, labels = time_graph.get_legend_handles_labels()
     rf_graph.legend().remove()
-    f1_graph.legend().remove()
+    # f1_graph.legend().remove()
     mc_graph.legend().remove()
-    time_graph.get_legend().remove()
+    time_graph.legend().remove()
     fig.legend(
         handles,
         labels,
@@ -268,6 +308,17 @@ def graph_combined(image_directory, df, x_col, suptitle, methods):
         bbox_inches="tight",
     )
     plt.close(fig)
+
+    for datapoint, results in all_results:
+        with open(image_directory + f"{datapoint}.imp", "w") as f:
+            header = sorted(results.keys())
+
+            for key in sorted(results):
+                f.write(f"{key}: {results[key]}\n")
+        # print(results)
+        # with open(image_directory + f"{datapoint}.speedup", "w") as f:
+        #     header = None
+        #     for result in results:
 
 
 def log_time_ticks(min_value, max_value, padding=0):
