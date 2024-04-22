@@ -38,6 +38,9 @@ def matching_cluster_distance(
         intersection = clusters_1.intersection(clusters_2)
         clusters_1 = list(clusters_1.difference(intersection))
         clusters_2 = list(clusters_2.difference(intersection))
+    else:
+        clusters_1 = list(clusters_1)
+        clusters_2 = list(clusters_2)
     while len(clusters_1) < len(clusters_2):
         clusters_1.append(set())
     while len(clusters_2) < len(clusters_1):

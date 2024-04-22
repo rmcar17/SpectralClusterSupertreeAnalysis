@@ -25,7 +25,7 @@ def birth_death_tree(
     Generates a rooted phylogenetic tree according to the birth-death model given a birth rate,
     death rate and stopping time (length of tips of generated tree from root) or stopping taxa number.
 
-    If the birth-death model causes an extinction over the entire phylogeny, behavious is
+    If the birth-death model causes an extinction over the entire phylogeny, behaviors is
     dependent on restart_on_fail. If restart_on_fail is False, then raises a RuntimeException.
     Otherwise, attempts to form a birth-death tree again.
 
@@ -34,8 +34,8 @@ def birth_death_tree(
         death_rate (float): The death rate
         stopping_time (Optional[float]): Time for simulation
         stopping_taxa (Optional[int]): Total taxa to generate for
-        restart_on_fail (bool, optional): If True, total extinction restarts the process. Otherwise throws a RuntimeExeption. Defaults to False.
-        rename (bool, optional): If True, renames the leaves of the tree with formated numbers prefixed with "t" at the end of the process. Defaults to False.
+        restart_on_fail (bool, optional): If True, total extinction restarts the process. Otherwise throws a RuntimeException. Defaults to False.
+        rename (bool, optional): If True, renames the leaves of the tree with formatted numbers prefixed with "t" at the end of the process. Defaults to False.
 
     Raises:
         RuntimeError: If the phylogeny entirely becomes extinct through the process. Can instead restart when restart_on_fail is True.

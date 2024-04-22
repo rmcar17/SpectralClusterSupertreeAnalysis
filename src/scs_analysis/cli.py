@@ -75,7 +75,7 @@ _seed = click.option(
 @click.option("-a", "--all", is_flag=True, help="include all supertree methods.")
 @click.option("-b", "--bcd", is_flag=True, help="include bad clade deletion method.")
 @click.option(
-    "-s", "--scs", is_flag=True, help="include spectral cluster supertre method."
+    "-s", "--scs", is_flag=True, help="include spectral cluster supertree method."
 )
 @click.option("-u", "--sup", is_flag=True, help="include superfine method.")
 @click.option("-m", "--mcs", is_flag=True, help="include min-cut supertree method.")

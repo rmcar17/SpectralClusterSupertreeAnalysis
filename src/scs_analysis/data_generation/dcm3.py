@@ -64,7 +64,7 @@ def ucs_ascending(initial_node: PhyloNode) -> Set:
                 distance_node_banned.banned
             ):
                 if neighbour is distance_node_banned.node.parent:
-                    # The nieghbour is the node's parent need to add the node's length
+                    # The neighbour is the node's parent need to add the node's length
                     heapq.heappush(
                         frontier,
                         DistanceNodeBanned(
@@ -75,7 +75,7 @@ def ucs_ascending(initial_node: PhyloNode) -> Set:
                         ),
                     )
                 else:
-                    # The neighbour is a child of the ndoe. Add the child's length, banned is the parent node
+                    # The neighbour is a child of the node. Add the child's length, banned is the parent node
                     heapq.heappush(
                         frontier,
                         DistanceNodeBanned(
@@ -236,7 +236,7 @@ def centroid_heuristic_separator(tree: PhyloNode) -> Set:
         key=lambda node: abs(
             getattr(
                 node, "_tmp_num_descendants"
-            )  # The number of desecndants for a node
+            )  # The number of descendants for a node
             - (  # The number of other taxa in the tree
                 getattr(tree, "_tmp_num_descendants")
                 - getattr(node, "_tmp_num_descendants")
