@@ -10,6 +10,7 @@ from scs_analysis.experiment.experiment import (
     DCM_SUBTREE_SIZE,
     DCM_TAXA,
     SCS,
+    SCS_FAST,
     SMIDGEN_DENSITY,
     SMIDGEN_OG_DENSITY,
     SMIDGEN_OG_NORMAL_TAXA,
@@ -98,12 +99,12 @@ def run_experiment(
     """
     methods = []
     if all:
-        methods = [BCD, SCS, SUP, MCS]
+        methods = [BCD, SCS_FAST, SUP, MCS]
     else:
         if bcd:
             methods.append(BCD)
         if scs:
-            methods.append(SCS)
+            methods.append(SCS_FAST)
         if sup:
             methods.append(SUP)
         if mcs:
