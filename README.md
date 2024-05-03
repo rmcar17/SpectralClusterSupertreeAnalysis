@@ -2,7 +2,7 @@
 
 A repository containing experiments for the Spectral Cluster Supertree algorithm.
 
-This repository was use to document experiments for the Spectral Cluster Supertree paper. For just the Spectral Cluster Supertree algorithm, please go to the linked [repository](https://github.com/rmcar17/SpectralClusterSupertree).
+This repository was used to document experiments for the Spectral Cluster Supertree paper. For just the Spectral Cluster Supertree algorithm, please go to the linked [repository](https://github.com/rmcar17/SpectralClusterSupertree).
 
 ## Installation
 
@@ -16,15 +16,11 @@ In the same python environment in which Spectral Cluster Supertree was installed
 
 ### Bad Clade Deletion (Optional)
 
-TODO (requires java)
-
-### Superfine (Optional)
-
-Likely going to remove as it is an unrooted method. (TODO)
+The JAR file from [this website](https://bio.informatik.uni-jena.de/software/bcd/) comes prepackaged in this repository. It requires `java` to be available from the command line.
 
 ### IQTree2 (Optional)
 
-TODO
+Download IQ-TREE 2 from the [official website](http://www.iqtree.org/), and ensure the command line application is available from the path. 
 
 ## Download Datasets
 
@@ -50,7 +46,7 @@ Calculates the distance between the estimated and model trees for a given experi
 
 `scsa plot`
 
-Draws graphs for all experiments distances have been calculated for.
+Draws graphs for all experiments distances have been calculated for. See the help for more information.
 
 ### Data Generation
 
@@ -80,6 +76,12 @@ The maximal size may be violated (usually in cases where it is too small). See t
 
 #### Generating IQTree Source Trees
 
-Given
+`scsa iqtree [OPTIONS] NUM_TAXA MAX_SUBPROBLEM_SIZE`
 
-iqtree
+ Given the taxa in each of the DCM source trees for a number of taxa and
+maximum subproblem size, and the sequence alignments over all the taxa in
+the model tree, generates source trees using IQTree2 under a strand-
+symmetric model. See the help for more information.
+
+
+#### Stats
