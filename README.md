@@ -12,7 +12,7 @@ Follow the installation instructions the Spectral Cluster Supertree [repository]
 
 ### Command line interface (Required)
 
-In the same python environment in which Spectral Cluster Supertree was installed, run ``flit install -s --python `which python` ``
+In the same python environment in which Spectral Cluster Supertree was installed, run ``flit install -s`` under this directory.
 
 ### Bad Clade Deletion (Optional)
 
@@ -28,7 +28,7 @@ TODO
 
 ## Download Datasets
 
-TODO put link to zenodo containing data files. Perhaps add script to unpack correctly.
+TODO put link to Zenodo containing data files. Perhaps add script to unpack correctly.
 
 ## Command Line Interface
 
