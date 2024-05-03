@@ -242,42 +242,6 @@ def run_experiment_super_triplets(
         )
 
 
-def run_experiment_smidgen(
-    taxa: int,
-    density: int,
-    methods: List,
-    verbosity: int = 1,
-    calculate_distances: bool = True,
-    result_logging: bool = False,
-    rng: Optional[random.Random] = None,
-):
-    assert taxa in SMIDGEN_TAXA
-    assert density in SMIDGEN_DENSITY
-
-    if rng is None:
-        rng = random.Random()
-
-    if result_logging:
-        logger = ResultsLogger(RESULTS_FOLDER, f"superfine/{taxa}-taxa/{density}/")
-    else:
-        logger = None
-
-    number_of_experiments = 10 if taxa == 1000 else 30
-
-    for i in range(number_of_experiments):
-        file = f"data/superfine/{taxa}-taxa/{density}/sm_data.{i}"
-        print(f"Results for {i} ({file}):")
-        run_methods(
-            file + ".source_trees",
-            file + ".model_tree",
-            methods,
-            verbosity=verbosity,
-            calculate_distances=calculate_distances,
-            logger=logger,
-            rng=rng,
-        )
-
-
 def run_experiment_smidgen_og(
     taxa: int,
     density: int,

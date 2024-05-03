@@ -76,7 +76,6 @@ _seed = click.option(
 @click.option(
     "-s", "--scs", is_flag=True, help="include spectral cluster supertree method."
 )
-@click.option("-u", "--sup", is_flag=True, help="include superfine method.")
 @click.option("-m", "--mcs", is_flag=True, help="include min-cut supertree method.")
 @click.option("-n", "--name", type=str, help="name of method")
 @click.argument("dataset-name", nargs=1, required=True, type=str)
@@ -84,7 +83,7 @@ _seed = click.option(
 @_verbose
 @_seed
 def run_experiment(
-    all, bcd, scs, sup, mcs, name, dataset_name, dataset_params, verbose, rand
+    all, bcd, scs, mcs, name, dataset_name, dataset_params, verbose, rand
 ):
     """
     Runs a supertree experiment over the given methods on a specific dataset.
@@ -98,14 +97,12 @@ def run_experiment(
     """
     methods = []
     if all:
-        methods = [BCD, SCS_FAST, SUP, MCS]
+        methods = [BCD, SCS_FAST, MCS]
     else:
         if bcd:
             methods.append(BCD)
         if scs:
             methods.append(SCS_FAST)
-        if sup:
-            methods.append(SUP)
         if mcs:
             methods.append(MCS)
     if name:
@@ -188,7 +185,6 @@ def run_experiment(
 
 EXPERIMENT_FOLDER_IDENTIFIERS = {
     "supertriplets": "SuperTripletsBenchmark",
-    "smidgen": "superfine",
     "smidgenog": "SMIDGenOutgrouped",
     "dcmexact": "dcm_source_trees",
     "dcm": "iq_source_trees",
