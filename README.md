@@ -82,6 +82,3 @@ The maximal size may be violated (usually in cases where it is too small). See t
 maximum subproblem size, and the sequence alignments over all the taxa in
 the model tree, generates source trees using IQTree2 under a strand-
 symmetric model. See the help for more information.
-
-
-#### Stats
