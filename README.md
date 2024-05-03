@@ -12,7 +12,7 @@ Follow the installation instructions the Spectral Cluster Supertree [repository]
 
 ### Command line interface (Required)
 
-In the same python environment in which Spectral Cluster Supertree was installed, run ``flit install -s`` under this directory.
+In the same python environment in which Spectral Cluster Supertree was installed, run ``pip install flit`` then ``flit install -s`` under this directory.
 
 ### Bad Clade Deletion (Optional)
 
