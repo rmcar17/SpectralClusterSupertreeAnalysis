@@ -1,33 +1,13 @@
 .vscode
 
-# Results
-
-# results/*
-# !results/.gitkeep
-
 # Images
 
 images/*
 !images/.gitkeep
 
 # Data folders
-data/alignment/*
-!data/alignment/.gitkeep
-
-data/birth_death/*
-!data/birth_death/.gitkeep
-
-data/simulated_trees/*
-!data/simulated_trees/.gitkeep
-
-data/SMIDGenOutgrouped/*
-!data/SMIDGenOutgrouped/.gitkeep
-
-data/superfine/*
-!data/superfine/.gitkeep
-
-data/SuperTripletsBenchmark/*
-!data/SuperTripletsBenchmark/.gitkeep
+data/*
+!data/.gitkeep
 
 methods/bcd/data/*
 
