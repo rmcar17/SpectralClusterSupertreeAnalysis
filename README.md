@@ -20,11 +20,13 @@ The JAR file from [this website](https://bio.informatik.uni-jena.de/software/bcd
 
 ### IQTree2 (Optional)
 
-Download IQ-TREE 2 from the [official website](http://www.iqtree.org/), and ensure the command line application is available from the path. 
+Download IQ-TREE 2 from the [official website](http://www.iqtree.org/), and ensure the command line application is available from the path.
 
-## Download Datasets
+## Download Datasets (Optional)
 
-TODO put link to Zenodo containing data files. Perhaps add script to unpack correctly.
+A script has been set up to download and unpack all datasets from Zenodo (<https://zenodo.org/doi/10.5281/zenodo.11118021>).
+
+To download, run `python get_data.py` in the terminal. The script may take some time to run as it downloads then unpacks ~1GB of compressed data.
 
 ## Command Line Interface
 
