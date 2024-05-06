@@ -4,6 +4,22 @@ A repository containing experiments for the Spectral Cluster Supertree algorithm
 
 This repository was used to document experiments for the Spectral Cluster Supertree paper. For just the Spectral Cluster Supertree algorithm, please go to the linked [repository](https://github.com/rmcar17/SpectralClusterSupertree).
 
+## Repository layout
+
+- `data/` - directory containing miscellaneous data.
+- `images/` - figures generated from results
+- `methods/` - programs which run each supertree method evaluated
+- `results/` - results pertaining to each method over the datasets
+- `scripts/` - scripts for running each method
+- `src/` - cli interface and programs used for data generation/distance calculation, etc.
+- `tests/` - tests for the matching cluster distacnce metric
+- `tmp/` - temporary directory
+
+This repository also contains an implementation of the disk-covering method Rec-I-DCM3 (Roshan et al., 2004) for the case of rooted trees.
+The function exists in `src/data_generation/dcm3.py` as `dcm3(guide_tree: PhyloNode, max_problem_size: int) -> List[PhyloNode]` which recursively
+decomposes a `cogent3` tree object into a collection of overlapping subtrees according to the algorithm. Each subtree is of size at most `max_problem_size`,
+except in the case the tree cannot be decomposed anymore.
+
 ## Installation
 
 ### Spectral Cluster Supertree (Required)
