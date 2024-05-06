@@ -1,5 +1,7 @@
 # Spectral Cluster Supertree Analysis
 
+[![DOI](https://zenodo.org/badge/705986177.svg)](https://zenodo.org/badge/latestdoi/705986177)
+
 A repository containing experiments for the Spectral Cluster Supertree algorithm.
 
 This repository was used to document experiments for the Spectral Cluster Supertree paper. For just the Spectral Cluster Supertree algorithm, please go to the linked [repository](https://github.com/rmcar17/SpectralClusterSupertree).
