@@ -9,19 +9,14 @@ from scs_analysis.experiment.experiment import (
     BCD,
     DCM_SUBTREE_SIZE,
     DCM_TAXA,
-    SCS,
     SCS_FAST,
-    SMIDGEN_DENSITY,
     SMIDGEN_OG_DENSITY,
     SMIDGEN_OG_NORMAL_TAXA,
-    SMIDGEN_TAXA,
-    SUP,
     MCS,
     SUPER_TRIPLET_D,
     SUPER_TRIPLET_K,
     run_experiment_dcm,
     run_experiment_dcm_exact,
-    run_experiment_smidgen,
     run_experiment_smidgen_og,
     run_experiment_super_triplets,
 )
@@ -35,12 +30,7 @@ import time
 
 __author__ = "Robert McArthur"
 __copyright__ = "Copyright 2023, Robert McArthur"
-__credits__ = ["Robert McArthur"]
-__license__ = "BSD"
-__version__ = "2023.11.06"  # A DATE BASED VERSION
-__maintainer__ = "Robert McArthur"
-__email__ = "robert.mcarthur@anu.edu.au"
-__status__ = "alpha"
+__version__ = "2024.5.7"
 
 
 @click.group()
@@ -119,16 +109,6 @@ def run_experiment(
             dataset_params[0] = [dataset_params[0]]
         if dataset_params[1] == 0:
             dataset_params[1] = SUPER_TRIPLET_K
-        else:
-            dataset_params[1] = [dataset_params[1]]
-    elif dataset_name == "smidgen":
-        experiment = run_experiment_smidgen
-        if dataset_params[0] == 0:
-            dataset_params[0] = SMIDGEN_TAXA
-        else:
-            dataset_params[0] = [dataset_params[0]]
-        if dataset_params[1] == 0:
-            dataset_params[1] = SMIDGEN_DENSITY
         else:
             dataset_params[1] = [dataset_params[1]]
     elif dataset_name == "smidgenog":

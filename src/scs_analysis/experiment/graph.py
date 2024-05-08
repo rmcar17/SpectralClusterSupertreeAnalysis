@@ -213,8 +213,6 @@ def graph_combined(image_directory, df, x_col, suptitle, methods):
 
     fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(8, 8 / 2))
 
-    # fig.suptitle(suptitle)
-
     hue_order = generate_hue_order(df["Method"].unique())
     palette = {
         METHOD_MAP[SCS_FAST]: "C0",
@@ -309,16 +307,103 @@ def graph_combined(image_directory, df, x_col, suptitle, methods):
     )
     plt.close(fig)
 
+    # Stats
     for datapoint, results in all_results:
         with open(image_directory + f"{datapoint}.imp", "w") as f:
             header = sorted(results.keys())
 
             for key in sorted(results):
                 f.write(f"{key}: {results[key]}\n")
-        # print(results)
-        # with open(image_directory + f"{datapoint}.speedup", "w") as f:
-        #     header = None
-        #     for result in results:
+
+    # Supplementary
+
+    fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(8, 8 / 1.7))
+
+    # RF Distance
+    rf_graph = sns.boxplot(
+        df,
+        x=x_col,
+        y="RF Distance",
+        hue="Method",
+        hue_order=hue_order,
+        palette=palette,  # type: ignore
+        ax=ax[0, 0],
+    )
+    rf_graph.set_ylim(0, None)
+    rf_graph.set_title("Robinson-Foulds Distance (Lower is Better)")
+    # F1 Score
+    f1_graph = sns.boxplot(
+        df,
+        x=x_col,
+        y="F1 Score",
+        hue="Method",
+        hue_order=hue_order,
+        palette=palette,  # type: ignore
+        ax=ax[0, 1],
+    )
+    f1_graph.set_ylim(None, 1)
+    f1_graph.set_title(r"$\mathrm{F_1}$ Score (Higher is Better)")
+    f1_graph.set_ylabel(r"$\mathrm{F_1}$ Score")
+
+    # Matching Cluster Distance
+    mc_graph = sns.boxplot(
+        df,
+        x=x_col,
+        y="Matching Cluster Distance",
+        hue="Method",
+        hue_order=hue_order,
+        palette=palette,  # type: ignore
+        ax=ax[1, 0],
+    )
+    mc_graph.set_ylim(0, None)
+    mc_graph.ticklabel_format(style="plain", axis="y")
+    mc_graph.set_title("Matching Cluster Distance (Lower is Better)")
+
+    # CPU Time
+    time_graph = sns.boxplot(
+        df,
+        x=x_col,
+        y="CPU Time",
+        hue="Method",
+        hue_order=hue_order,
+        palette=palette,  # type: ignore
+        ax=ax[1, 1],
+    )
+    time_graph.set_yscale("log")
+    time_graph.set_title("CPU Time (Log Scale) (Lower is Better)")
+
+    min_time = df["CPU Time"].min()
+    max_time = df["CPU Time"].max()
+
+    time_ticks = log_time_ticks(min_time, max_time)
+    time_graph.minorticks_off()
+    time_graph.set_yticks(time_ticks)
+
+    time_graph.set_ylim(time_ticks[0], time_ticks[-1])
+    time_graph.yaxis.set_major_formatter(FuncFormatter(format_time_tick))
+
+    # Legend
+    handles, labels = time_graph.get_legend_handles_labels()
+    rf_graph.legend().remove()
+    f1_graph.legend().remove()
+    mc_graph.legend().remove()
+    time_graph.legend().remove()
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        ncol=len(df["Method"].unique()),
+        bbox_to_anchor=(0.5, -0.03),
+    )
+
+    fig.tight_layout()
+
+    fig.savefig(
+        image_directory
+        + f"f1_{include_code(methods)}_{suptitle.lower().replace(' ','_').replace('(','').replace(')','').replace('%','').replace('=','_')}.pdf",
+        bbox_inches="tight",
+    )
+    plt.close(fig)
 
 
 def log_time_ticks(min_value, max_value, padding=0):
